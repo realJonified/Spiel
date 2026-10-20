@@ -16,14 +16,14 @@ Länger gedrückt halten = höher springen.
 
 ## Regeln
 
-- 18 Welten, am Ende jeder Welt wartet die Fahne.
+- 22 Welten, am Ende jeder Welt wartet die Fahne.
 - Ab Welt 7 gibt es neue Hindernisse:
   - fahrende Plattformen, die hin und her oder auf und ab fahren
   - Fledermäuse, die durch die Luft flattern (draufspringen gibt 150 Punkte)
   - Bröckelsteine, die kurz nach dem Betreten herunterfallen
   - Feuerbälle, die aus der Lava springen
   - Kanonen, die Kugeln auf dich schießen (auf Kugeln kann man draufspringen)
-- In Welt 11 bis 18 wartet am Ende ein Boss. Erst wenn er besiegt ist, geht das Tor zur Fahne auf:
+- In Welt 11 bis 22 wartet am Ende ein Boss. Erst wenn er besiegt ist, geht das Tor zur Fahne auf:
   - Welt 11: **König Matsch** (3 Treffer) hüpft durch die Arena
   - Welt 12: **Fledermaus-Königin** (3 Treffer) stürzt sich von oben herab
   - Welt 13: **Kanonen-Golem** (4 Treffer) schießt Kugeln
@@ -32,6 +32,12 @@ Länger gedrückt halten = höher springen.
   - Welt 16: **Skorpion Stachel** (4 Treffer) rast quer durch die Arena und ist danach benommen
   - Welt 17: **Geisterkönig** (4 Treffer) verschwindet, taucht woanders auf und schießt Geisterkugeln
   - Welt 18: **Mega-Roboter** (6 Treffer) springt, macht Schockwellen am Boden und schießt Kugeln
+  - Welt 19: **Eis-Hexe Frostina** (7 Treffer) lässt Eiszapfen fallen, ihr Schatten zeigt wohin
+  - Welt 20: **Lava-Golem Magmo** (8 Treffer) lässt Lavasäulen aus dem Boden schießen und macht Schockwellen
+  - Welt 21: **Schatten-Hüpfi** (8 Treffer) ist schnell, springt und wirft Schattenkugeln
+  - Welt 22: **Gewitterkönig Blitzo** (10 Treffer) lässt Blitze einschlagen
+- Ab Welt 19 gibt es neue Hindernisse: **Laserschranken**, die an- und ausgehen, **Feuerstäbe**, die sich drehen,
+  und **Stampfblöcke**, die herunterkrachen, wenn du darunter läufst.
   - Jeder Treffer gibt 300 Punkte, ein besiegter Boss 2000 Punkte.
 - Rote Sprungfedern schleudern dich hoch hinaus.
 - Bei Game Over geht es in der Welt weiter, in der du verloren hast.
@@ -95,4 +101,5 @@ Die Rekorde werden nur in deinem Browser auf diesem Gerät gespeichert.
 - Hüpfi kann nicht sterben: Gegner, Stacheln, Feuer und Bosse schubsen ihn nur kurz weg.
   Fällt er in ein Loch, kommt er zurück auf den letzten sicheren Boden.
 - Bleibt an, auch wenn der Admin-Modus wieder aus ist. Oben steht dann „Kindermodus“.
+- Im Bosskampf fliegen im Kindermodus automatisch Waffen (Sterne, Feuer- und Eisgeschosse) auf den Boss.
 - Im Kindermodus werden keine Rekorde gespeichert.
