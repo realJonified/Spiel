@@ -11,6 +11,7 @@ Ein kleines Jump-and-Run im Browser – eine einzige Datei, keine Installation.
 | Laufen   | ← / → oder A / D         | Knöpfe links unten     |
 | Springen | Leertaste, ↑ oder W      | Knopf rechts unten     |
 | Pause    | P                        | –                      |
+| Waffe    | X oder F (nur beim Boss) | ★-Knopf (nur beim Boss) |
 
 Länger gedrückt halten = höher springen.
 
@@ -39,6 +40,8 @@ Länger gedrückt halten = höher springen.
 - Ab Welt 19 gibt es neue Hindernisse: **Laserschranken**, die an- und ausgehen, **Feuerstäbe**, die sich drehen,
   und **Stampfblöcke**, die herunterkrachen, wenn du darunter läufst.
   - Jeder Treffer gibt 300 Punkte, ein besiegter Boss 2000 Punkte.
+  - In jedem Bosskampf hast du eine Waffe (Taste X oder ★-Knopf). Sie fliegt von selbst auf den Boss,
+    danach musst du gut 2 Sekunden warten, bis du wieder schießen kannst.
 - Rote Sprungfedern schleudern dich hoch hinaus.
 - Bei Game Over geht es in der Welt weiter, in der du verloren hast.
 - Münzen geben 10 Punkte, alle 50 Münzen gibt es ein Extraleben.

@@ -19,6 +19,20 @@
     color-scheme: dark;
   }
   html, body { height: 100%; }
+  html { touch-action: manipulation; }
+  /* Kein Kopieren-/Auswahl-Menü beim langen Drücken auf Tablet und Handy */
+  * { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+  input { -webkit-touch-callout: default; -webkit-user-select: text; user-select: text; }
+  canvas { touch-action: none; }
+  .fire-btn {
+    position: absolute; z-index: 2; touch-action: none;
+    right: max(16px, env(safe-area-inset-right, 0px)); bottom: 16px;
+    width: 84px; height: 84px; border-radius: 50%;
+    font-family: var(--font-display); font-size: 34px; color: var(--gold);
+    background: color-mix(in srgb, var(--panel) 80%, transparent); border: 3px solid var(--gold);
+  }
+  .fire-btn.on { background: var(--panel-edge); }
+  @media (pointer: fine) { .fire-btn { display: none; } }
   [hidden] { display: none !important; }
   body {
     margin: 0;
@@ -232,7 +246,7 @@
       <div class="card">
         <h1 id="ovTitle">Hüpfi springt</h1>
         <p id="ovText">Sammle Münzen, spring auf Gegner und erreiche die Fahne. Zweiundzwanzig Welten warten.</p>
-        <p class="keys desk"><kbd>←</kbd> <kbd>→</kbd> laufen · <kbd>Leertaste</kbd> springen · <kbd>P</kbd> Pause</p>
+        <p class="keys desk"><kbd>←</kbd> <kbd>→</kbd> laufen · <kbd>Leertaste</kbd> springen · <kbd>X</kbd> Waffe beim Boss · <kbd>P</kbd> Pause</p>
         <p class="keys phone">Links unten laufen, rechts unten springen.</p>
         <label class="namefield" id="nameField" hidden>Dein Name für die Bestenliste
           <input id="playerName" type="text" maxlength="12" autocomplete="off" placeholder="Hüpfi">
@@ -304,6 +318,7 @@
       </div>
     </div>
 
+    <button class="fire-btn" id="fireBtn" type="button" aria-label="Waffe" hidden>★</button>
   </div>
   <div class="touch" aria-hidden="true">
     <div class="group">
@@ -694,7 +709,7 @@
   ];
 
   // ---------- Zustand ----------
-  let level, levelIdx = 0, player, enemies, particles = [], boss = null, bossShots = [], weapons = [];
+  let level, levelIdx = 0, player, enemies, particles = [], boss = null, bossShots = [], weapons = [], weaponCd = 0, weaponCount = 0;
   let score = 0, lives = 3, coinCount = 0, levelStartScore = 0, levelStartCoins = 0;
   let state = 'title', stateTimer = 0, time = 0, camX = 0;
   let levelTime = 0;
@@ -789,7 +804,7 @@
       ? { ...e, x: e.bx, y: e.by, w: 26, h: 18, vx: 0, dead: 0 }
       : { ...e, w: 26, h: 22, vx: -1.1, vy: 0, dead: 0, onGround: false });
     boss = level.boss ? makeBoss(level.boss) : null;
-    bossShots = []; weapons = [];
+    bossShots = []; weapons = []; weaponCd = 0;
     particles = [];
     levelStartScore = score; levelStartCoins = coinCount; levelTime = 0;
     camX = 0;
@@ -833,9 +848,9 @@
   const overlap = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 
   // ---------- Eingabe ----------
-  const keys = { left: false, right: false, jump: false };
-  let jumpPressed = false;
-  const KEYMAP = { ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right', Space: 'jump', ArrowUp: 'jump', KeyW: 'jump' };
+  const keys = { left: false, right: false, jump: false, fire: false };
+  let jumpPressed = false, firePressed = false;
+  const KEYMAP = { ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right', Space: 'jump', ArrowUp: 'jump', KeyW: 'jump', KeyX: 'fire', KeyF: 'fire' };
   addEventListener('keydown', e => {
     if (!$('records').hidden) { if (e.code === 'Escape') closeRecords(); return; }
     if (!$('shop').hidden) { if (e.code === 'Escape') closeShop(); return; }
@@ -846,6 +861,7 @@
     if (k) {
       e.preventDefault();
       if (k === 'jump' && !keys.jump) jumpPressed = true;
+      if (k === 'fire') firePressed = true;
       keys[k] = true;
       if (k === 'jump' && overlayVisible()) { $('ovBtn').click(); }
     }
@@ -853,11 +869,18 @@
     if (e.code === 'KeyP' && (state === 'play' || state === 'pause')) togglePause();
   });
   addEventListener('keyup', e => { const k = KEYMAP[e.code]; if (k) keys[k] = false; });
-  addEventListener('blur', () => { keys.left = keys.right = keys.jump = false; });
+  addEventListener('blur', () => { keys.left = keys.right = keys.jump = keys.fire = false; });
+  // langes Drücken soll kein Menü und keine Textauswahl öffnen
+  const notInput = e => !(e.target && e.target.tagName === 'INPUT');
+  document.addEventListener('contextmenu', e => { if (notInput(e)) e.preventDefault(); });
+  document.addEventListener('selectstart', e => { if (notInput(e)) e.preventDefault(); });
+  for (const el of [document.querySelector('.touch'), $('fireBtn'), canvas]) {
+    el.addEventListener('touchstart', e => e.preventDefault(), { passive: false });
+  }
 
-  document.querySelectorAll('.touch button').forEach(btn => {
-    const k = btn.dataset.key;
-    const down = e => { e.preventDefault(); if (k === 'jump' && !keys.jump) jumpPressed = true; keys[k] = true; btn.classList.add('on'); unlockAudio(); };
+  document.querySelectorAll('.touch button, #fireBtn').forEach(btn => {
+    const k = btn.dataset.key || 'fire';
+    const down = e => { e.preventDefault(); if (k === 'jump' && !keys.jump) jumpPressed = true; if (k === 'fire') firePressed = true; keys[k] = true; btn.classList.add('on'); unlockAudio(); };
     const up = e => { e.preventDefault(); keys[k] = false; btn.classList.remove('on'); };
     btn.addEventListener('pointerdown', down);
     btn.addEventListener('pointerup', up);
@@ -916,6 +939,10 @@
   }
   function newGame() { score = 0; lives = 3; coinCount = 0; loadLevel(0); state = 'play'; }
 
+  function updateFireBtn() {
+    const show = !!(boss && boss.active && !boss.dying && state === 'play');
+    if ($('fireBtn').hidden === show) $('fireBtn').hidden = !show;
+  }
   function updateHud() {
     $('hudLevel').textContent = level.name;
     $('hudCoins').textContent = coinCount;
@@ -1093,6 +1120,7 @@
   // ---------- Spiellogik ----------
   function die() {
     if (state !== 'play') return;
+    if (!kidMode) $('fireBtn').hidden = true;
     if (kidMode) {
       const p = player;
       if (p.y > ROWS * T) {
@@ -1314,9 +1342,13 @@
 
     const ghostHidden = b.type === 'ghostking' && b.alpha < 0.6;
 
-    // Kindermodus: Waffen fliegen von selbst auf den Boss
-    if (kidMode && b.t % 75 === 0) {
-      weapons.push({ kind: ['star', 'fire', 'ice'][Math.floor(b.t / 75) % 3], x: p.x + p.w / 2, y: p.y + 6, vx: b.face * 4, vy: -4, life: 260 });
+    // Waffen: Taste X oder ★-Knopf (kurze Pause zwischen zwei Schüssen); im Kindermodus fliegen sie auch von selbst
+    if (weaponCd > 0) weaponCd--;
+    const wantFire = (keys.fire || firePressed) && weaponCd <= 0;
+    firePressed = false;
+    if (wantFire || (kidMode && b.t % 75 === 0)) {
+      weapons.push({ kind: ['star', 'fire', 'ice'][weaponCount++ % 3], x: p.x + p.w / 2, y: p.y + 6, vx: b.face * 4, vy: -4, life: 260 });
+      if (wantFire) weaponCd = kidMode ? 30 : 150;
       beep(880, 0.08, 'square', 300, 0.05);
     }
     for (let i = weapons.length - 1; i >= 0; i--) {
@@ -1440,7 +1472,8 @@
           const next = levelIdx + 1;
           state = 'between';
           const nl = LEVELS[next]();
-          showOverlay(`Welt ${nl.name}`, `${clearText()} Du hast ${score} Punkte. ${nl.hint}`, 'Weiter', () => { loadLevel(next); state = 'play'; });
+          const weaponHint = nl.boss ? ' Im Bosskampf hast du eine Waffe: Taste X oder der ★-Knopf.' : '';
+          showOverlay(`Welt ${nl.name}`, `${clearText()} Du hast ${score} Punkte. ${nl.hint}${weaponHint}`, 'Weiter', () => { loadLevel(next); state = 'play'; });
         } else {
           const rank = addRun(true);
           state = 'won';
@@ -1575,6 +1608,7 @@
     }
     enemies = enemies.filter(e => e.dead >= 0 && !(e.squashed && e.dead === 0));
     if (updateBoss()) return;
+    updateFireBtn();
 
     // Fahne
     if (p.x + p.w > level.flag * T + 12) {
