@@ -19,6 +19,7 @@
     color-scheme: dark;
   }
   html, body { height: 100%; }
+  [hidden] { display: none !important; }
   body {
     margin: 0;
     background: var(--ink);
@@ -91,23 +92,25 @@
   .touch { display: none; }
   @media (pointer: coarse) {
     .touch {
-      position: absolute; left: 0; right: 0; bottom: 0;
-      display: flex; justify-content: space-between; align-items: flex-end;
+      flex: none;
+      display: flex;
+      background: var(--panel);
+      border-top: 3px solid var(--panel-edge);
+      padding-top: 10px; justify-content: space-between; align-items: flex-end;
       padding-left: max(16px, env(safe-area-inset-left, 0px));
       padding-right: max(16px, env(safe-area-inset-right, 0px));
-      padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-      pointer-events: none;
+      padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
     }
     .touch .group { display: flex; gap: 12px; }
     .touch button {
-      pointer-events: auto; touch-action: none;
-      width: 68px; height: 68px; border-radius: 50%;
+      touch-action: none;
+      width: 64px; height: 64px; border-radius: 50%;
       font-family: var(--font-display); font-size: 22px; color: var(--text);
-      background: color-mix(in srgb, var(--panel) 70%, transparent);
+      background: var(--ink);
       border: 3px solid var(--panel-edge);
     }
-    .touch button.on { background: color-mix(in srgb, var(--panel-edge) 85%, transparent); }
-    .touch .jump { width: 84px; height: 84px; color: var(--gold); }
+    .touch button.on { background: var(--panel-edge); }
+    .touch .jump { width: 76px; height: 64px; border-radius: 32px; color: var(--gold); }
     .card .keys.desk { display: none; }
   }
   @media (pointer: fine) { .card .keys.phone { display: none; } }
@@ -136,13 +139,13 @@
       </div>
     </div>
 
-    <div class="touch" aria-hidden="true">
-      <div class="group">
-        <button data-key="left" type="button">◀</button>
-        <button data-key="right" type="button">▶</button>
-      </div>
-      <button class="jump" data-key="jump" type="button">▲</button>
+  </div>
+  <div class="touch" aria-hidden="true">
+    <div class="group">
+      <button data-key="left" type="button">◀</button>
+      <button data-key="right" type="button">▶</button>
     </div>
+    <button class="jump" data-key="jump" type="button">▲</button>
   </div>
 </div>
 
@@ -175,7 +178,7 @@
   const LEVELS = [
     () => makeLevel('1-1', 90, 0, L => {
       L.ground(0, 28); L.ground(32, 54); L.ground(58, 89);
-      L.plat(10, 9, 4); L.coins(10, 8, 4);
+      L.plat(10, 10, 4); L.coins(10, 9, 4);
       L.plat(18, 7, 3); L.coins(18, 6, 3);
       L.enemy(23, 12);
       L.coins(29, 10, 3);
@@ -436,9 +439,9 @@
     jumpPressed = false;
     p.coyote = p.onGround ? 6 : p.coyote - 1;
     if (p.buffer > 0 && p.coyote > 0) {
-      p.vy = -11.6; p.buffer = 0; p.coyote = 0; p.squash = -6; sfx.jump();
+      p.vy = -12.8; p.buffer = 0; p.coyote = 0; p.squash = -6; sfx.jump();
     }
-    if (!keys.jump && p.vy < -4) p.vy = -4;
+    if (!keys.jump && p.vy < -5) p.vy = -5;
     p.vy = Math.min(p.vy + 0.55, 12);
     const wasAir = !p.onGround;
     moveBox(p);
