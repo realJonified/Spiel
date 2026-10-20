@@ -34,18 +34,30 @@ Länger gedrückt halten = höher springen.
 
 Jede Münze, die du einsammelst, landet in deinem Geldbeutel. Im **Shop** kannst du damit neue Skins für Hüpfi kaufen:
 
-| Skin       | Preis | Besonderheit           |
-|------------|-------|------------------------|
-| Hüpfi      | frei  | der Klassiker          |
-| Minze      | 50    | grün                   |
-| Beere      | 50    | pink                   |
-| Ozean      | 120   | mit Sonnenbrille       |
-| Kappe      | 150   | rote Baseballkappe     |
-| Ninja      | 250   | Stirnband              |
-| Katze      | 300   | Ohren und Schnurrhaare |
-| Roboter    | 400   | blinkende Antenne      |
-| König      | 600   | Krone                  |
-| Regenbogen | 1000  | wechselt die Farbe     |
+| Skin       | Preis | Besonderheit                |
+|------------|-------|-----------------------------|
+| Hüpfi      | frei  | der Klassiker               |
+| Minze      | 50    | grün                        |
+| Beere      | 50    | pink                        |
+| Frosch     | 80    | Glupschaugen oben drauf     |
+| Party      | 100   | Partyhut                    |
+| Ozean      | 120   | Sonnenbrille                |
+| Kappe      | 150   | rote Baseballkappe          |
+| Kürbis     | 180   | Gruselgesicht               |
+| Pirat      | 200   | Augenklappe und Kopftuch    |
+| Ninja      | 250   | Stirnband                   |
+| Panda      | 280   | schwarz-weiß                |
+| Katze      | 300   | Ohren und Schnurrhaare      |
+| Schneemann | 320   | Karottennase und Zylinder   |
+| Dino       | 350   | Rückenzacken                |
+| Roboter    | 400   | blinkende Antenne           |
+| Zauberer   | 450   | Sternenhut                  |
+| Geist      | 500   | durchsichtig und schwebend  |
+| König      | 600   | Krone                       |
+| Astronaut  | 700   | Helm mit Visier             |
+| Feuer      | 800   | lodernde Flammen            |
+| Regenbogen | 1000  | wechselt die Farbe          |
+| Diamant    | 1500  | glitzert                    |
 
 Gekaufte Skins kannst du jederzeit wieder anziehen. Geldbeutel und Skins werden nur in deinem Browser gespeichert.
 
