@@ -16,13 +16,19 @@ Länger gedrückt halten = höher springen.
 
 ## Regeln
 
-- 10 Welten (Wiese, Abendrot, Nacht, Schnee, Wüste, Lava-Burg, Wolken, Höhle, Vulkan, Gewitter), am Ende jeder Welt wartet die Fahne.
+- 14 Welten, am Ende jeder Welt wartet die Fahne.
 - Ab Welt 7 gibt es neue Hindernisse:
   - fahrende Plattformen, die hin und her oder auf und ab fahren
   - Fledermäuse, die durch die Luft flattern (draufspringen gibt 150 Punkte)
   - Bröckelsteine, die kurz nach dem Betreten herunterfallen
   - Feuerbälle, die aus der Lava springen
   - Kanonen, die Kugeln auf dich schießen (auf Kugeln kann man draufspringen)
+- In Welt 11 bis 14 wartet am Ende ein Boss. Erst wenn er besiegt ist, geht das Tor zur Fahne auf:
+  - Welt 11: **König Matsch** (3 Treffer) hüpft durch die Arena
+  - Welt 12: **Fledermaus-Königin** (3 Treffer) stürzt sich von oben herab
+  - Welt 13: **Kanonen-Golem** (4 Treffer) schießt Kugeln
+  - Welt 14: **Feuerdrache Flammo** (5 Treffer) wirft Feuerbälle
+  - Jeder Treffer gibt 300 Punkte, ein besiegter Boss 2000 Punkte.
 - Rote Sprungfedern schleudern dich hoch hinaus.
 - Bei Game Over geht es in der Welt weiter, in der du verloren hast.
 - Münzen geben 10 Punkte, alle 50 Münzen gibt es ein Extraleben.

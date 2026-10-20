@@ -195,7 +195,7 @@
     <div class="overlay" id="overlay">
       <div class="card">
         <h1 id="ovTitle">Hüpfi springt</h1>
-        <p id="ovText">Sammle Münzen, spring auf Gegner und erreiche die Fahne. Zehn Welten warten.</p>
+        <p id="ovText">Sammle Münzen, spring auf Gegner und erreiche die Fahne. Vierzehn Welten warten.</p>
         <p class="keys desk"><kbd>←</kbd> <kbd>→</kbd> laufen · <kbd>Leertaste</kbd> springen · <kbd>P</kbd> Pause</p>
         <p class="keys phone">Links unten laufen, rechts unten springen.</p>
         <label class="namefield" id="nameField" hidden>Dein Name für die Bestenliste
@@ -267,7 +267,7 @@
   function makeLevel(name, w, theme, build, hint = '') {
     const grid = Array.from({ length: ROWS }, () => new Array(w).fill(0));
     const coins = [], enemies = [], movers = [], fires = [], cannons = [];
-    let flag = w - 5, start = { x: 2, y: 12 };
+    let boss = null, flag = w - 5, start = { x: 2, y: 12 };
     const api = {
       ground(a, b) { for (let x = a; x <= b; x++) { grid[13][x] = 1; grid[14][x] = 1; } },
       plat(x, y, n) { for (let i = 0; i < n; i++) grid[y][x + i] = 2; },
@@ -283,9 +283,11 @@
       fire(x, delay = 0) { fires.push({ x: x * T + T / 2, y: ROWS * T + 30, vy: 0, wait: delay }); },
       bat(x, y, range) { enemies.push({ type: 'bat', bx: x * T, by: y * T, range: range * T, t: x * 13 }); },
       cannon(x) { grid[12][x] = 6; cannons.push({ tx: x, ty: 12, wait: 60 }); },
+      // Bosskampf: Arena ab Kachel arena, Tor bei gate geht erst nach dem Sieg auf
+      boss(type, x, arena, gate) { boss = { type, x: x * T, arena: arena * T, gate }; for (let y = 3; y <= 12; y++) grid[y][gate] = 2; },
     };
     build(api);
-    return { name, w, theme, grid, coins, enemies, flag, start, movers, fires, cannons, hint, crumble: new Map() };
+    return { name, w, theme, grid, coins, enemies, flag, start, movers, fires, cannons, boss, hint, crumble: new Map() };
   }
 
   // Faustregeln: Löcher höchstens 4 Kacheln breit, keine Plattform direkt über einem Loch
@@ -474,6 +476,51 @@
       L.col(138, 12); L.col(139, 11); L.col(140, 10); L.col(141, 9);
       L.flag(146);
     }, 'Das große Finale: Alles, was du bisher geschafft hast, kommt jetzt zusammen.'),
+    () => makeLevel('11', 100, 0, L => {
+      L.ground(0, 18);
+      L.plat(8, 10, 3); L.coins(8, 9, 3); L.enemy(14, 12);
+      L.coins(19, 10, 3);
+      L.ground(22, 40);
+      L.spikes(28, 2); L.coins(28, 9, 2); L.bat(34, 11, 3); L.enemy(38, 12);
+      L.mover(42, 11, 4, 'x', 2); L.coins(43, 10, 4);
+      L.ground(48, 99);
+      L.enemy(53, 12); L.plat(56, 10, 3); L.coins(56, 9, 3);
+      L.boss('slime', 80, 64, 88);
+      L.flag(92);
+    }, 'Boss: König Matsch! Spring ihm dreimal auf den Kopf. Erst dann geht das Tor zur Fahne auf.'),
+    () => makeLevel('12', 100, 7, L => {
+      L.ground(0, 14);
+      L.crumble(15, 13, 5); L.coins(15, 11, 5);
+      L.ground(20, 40);
+      L.bat(26, 11, 3); L.enemy(32, 12); L.crumble(35, 10, 3); L.coins(35, 9, 3);
+      L.crumble(42, 11, 4); L.coins(42, 10, 4);
+      L.ground(47, 99);
+      L.bat(52, 11, 2); L.spikes(57, 2); L.coins(57, 9, 2);
+      L.boss('batqueen', 76, 64, 88);
+      L.flag(92);
+    }, 'Boss: die Fledermaus-Königin! Wenn sie herunterstürzt, spring ihr auf den Rücken.'),
+    () => makeLevel('13', 100, 8, L => {
+      L.ground(0, 12);
+      L.mover(14, 11, 4, 'x', 2); L.coins(15, 10, 4);
+      L.ground(20, 38);
+      L.cannon(28); L.enemy(34, 12);
+      L.coins(39, 10, 4);
+      L.ground(43, 99);
+      L.bat(48, 11, 3); L.enemy(52, 12); L.spikes(56, 2); L.coins(56, 9, 2);
+      L.boss('golem', 80, 64, 88);
+      L.flag(92);
+    }, 'Boss: der Kanonen-Golem! Spring über seine Kugeln und dann auf seinen Kopf.'),
+    () => makeLevel('14', 100, 5, L => {
+      L.ground(0, 14);
+      L.fire(16, 0); L.fire(17, 50); L.coins(15, 10, 4);
+      L.ground(19, 36);
+      L.cannon(26); L.enemy(32, 12);
+      L.mover(38, 11, 4, 'x', 3); L.fire(42, 30);
+      L.ground(45, 99);
+      L.enemy(50, 12); L.spikes(55, 2); L.coins(55, 9, 2);
+      L.boss('dragon', 78, 64, 88);
+      L.flag(92);
+    }, 'Endboss: Feuerdrache Flammo! Weich seinen Feuerbällen aus und spring ihm fünfmal auf den Rücken.'),
   ];
 
   const THEMES = [
@@ -489,7 +536,7 @@
   ];
 
   // ---------- Zustand ----------
-  let level, levelIdx = 0, player, enemies, particles = [];
+  let level, levelIdx = 0, player, enemies, particles = [], boss = null, bossShots = [];
   let score = 0, lives = 3, coinCount = 0, levelStartScore = 0, levelStartCoins = 0;
   let state = 'title', stateTimer = 0, time = 0, camX = 0;
   let levelTime = 0;
@@ -574,6 +621,8 @@
     enemies = level.enemies.map(e => e.type === 'bat'
       ? { ...e, x: e.bx, y: e.by, w: 26, h: 18, vx: 0, dead: 0 }
       : { ...e, w: 26, h: 22, vx: -1.1, vy: 0, dead: 0, onGround: false });
+    boss = level.boss ? makeBoss(level.boss) : null;
+    bossShots = [];
     particles = [];
     levelStartScore = score; levelStartCoins = coinCount; levelTime = 0;
     camX = 0;
@@ -820,6 +869,92 @@
     player.vy = -9; player.vx = 0;
   }
 
+  const BOSSES = {
+    slime: { name: 'König Matsch', hp: 3, w: 64, h: 52, fly: false },
+    batqueen: { name: 'Fledermaus-Königin', hp: 3, w: 70, h: 40, fly: true },
+    golem: { name: 'Kanonen-Golem', hp: 4, w: 60, h: 64, fly: false },
+    dragon: { name: 'Feuerdrache Flammo', hp: 5, w: 84, h: 50, fly: true },
+  };
+  function makeBoss(d) {
+    const def = BOSSES[d.type];
+    return {
+      ...def, type: d.type, x: d.x, y: def.fly ? 5 * T : 13 * T - def.h, vx: -1.4, vy: 0, maxHp: def.hp, hp: def.hp,
+      hurt: 0, t: 0, active: false, dying: 0, arena: d.arena, gate: d.gate, onGround: false, face: -1, diveX: d.x,
+    };
+  }
+  function defeatBoss() {
+    const b = boss;
+    b.dying = 90; b.vy = -6; bossShots = [];
+    score += 2000; popup(b.x + b.w / 2, b.y - 10, '+2000');
+    sfx.flag();
+    for (let y = 3; y <= 12; y++) { level.grid[y][b.gate] = 0; burst(b.gate * T + T / 2, y * T + T / 2, THEMES[level.theme].stone, 4); }
+  }
+  // Gibt true zurück, wenn der Boss Hüpfi erwischt hat
+  function updateBoss() {
+    const b = boss, p = player;
+    if (!b) return false;
+    if (b.dying) { b.dying--; b.vy += 0.4; b.y += b.vy; if (!b.dying) boss = null; return false; }
+    if (!b.active) {
+      if (p.x < b.arena + 2 * T) return false;
+      b.active = true; beep(90, 0.6, 'sawtooth', -40, 0.12);
+    }
+    b.t++;
+    if (b.hurt) b.hurt--;
+    const left = b.arena, right = b.gate * T - b.w, rage = b.maxHp - b.hp;
+    b.face = Math.sign(p.x + p.w / 2 - (b.x + b.w / 2)) || -1;
+    if (b.type === 'slime') {
+      const sp = 1.4 + rage * 0.7;
+      b.vy = Math.min(b.vy + 0.5, 12);
+      b.vx = Math.sign(b.vx || -1) * sp;
+      if (b.onGround && b.t % 140 === 0) { b.vy = -11; b.vx = b.face * (sp + 1); }
+      moveBox(b);
+    } else if (b.type === 'golem') {
+      const c = b.t % 160;
+      b.vy = Math.min(b.vy + 0.5, 12);
+      b.vx = c < 100 ? b.face * (0.8 + rage * 0.3) : 0;
+      if (c === 110 || (rage >= 2 && c === 140)) {
+        enemies.push({ type: 'bullet', x: b.face < 0 ? b.x - 24 : b.x + b.w + 2, y: 13 * T - 23, w: 22, h: 14, vx: 3 * b.face, dead: 0, age: 0 });
+        beep(110, 0.15, 'square', -40, 0.08);
+      }
+      moveBox(b);
+    } else {
+      const hoverY = (b.type === 'dragon' ? 3.5 : 5) * T, lowY = 11 * T - b.h;
+      const period = (b.type === 'dragon' ? 260 : 220) - rage * 25, dive = 100, c = b.t % period;
+      if (c < period - dive) {
+        b.x += (left + (right - left) * (0.5 + 0.5 * Math.sin(b.t * 0.012)) - b.x) * 0.05;
+        b.y += (hoverY - b.y) * 0.08;
+        if (b.type === 'dragon' && b.t % Math.max(40, 90 - rage * 12) === 0) bossShots.push({ x: b.x + b.w / 2, y: b.y + b.h, vy: 1 });
+      } else {
+        const k = (c - (period - dive)) / dive;
+        if (c === period - dive) b.diveX = Math.max(left, Math.min(right, p.x + p.w / 2 - b.w / 2));
+        b.x += (b.diveX - b.x) * 0.08;
+        b.y = hoverY + (lowY - hoverY) * Math.sin(k * Math.PI);
+      }
+    }
+    if (b.x < left) { b.x = left; b.vx = Math.abs(b.vx); }
+    if (b.x > right) { b.x = right; b.vx = -Math.abs(b.vx); }
+
+    for (let i = bossShots.length - 1; i >= 0; i--) {
+      const f = bossShots[i];
+      f.vy = Math.min(f.vy + 0.25, 9); f.y += f.vy;
+      if (f.y > 13 * T - 6) { burst(f.x, f.y, '#ff6a1f', 6); bossShots.splice(i, 1); continue; }
+      if (Math.abs(p.x + p.w / 2 - f.x) < p.w / 2 + 7 && Math.abs(p.y + p.h / 2 - f.y) < p.h / 2 + 7) { die(); return true; }
+    }
+
+    if (overlap(p, b) && !b.hurt) {
+      if (p.vy > 0 && p.y + p.h - b.y < 24) {
+        b.hp--; b.hurt = 70; p.vy = keys.jump ? -12 : -9;
+        p.vx = (p.x + p.w / 2 < b.x + b.w / 2 ? -1 : 1) * 4.6;   // vom Boss wegschubsen
+        score += 300; sfx.stomp(); burst(b.x + b.w / 2, b.y, '#ffffff', 14); popup(b.x + b.w / 2, b.y - 10, '300');
+        if (!b.fly) b.vx = -b.vx;
+        if (b.hp <= 0) defeatBoss();
+      } else if (b.fly && p.y + p.h / 2 > b.y + b.h * 0.6) {
+        p.vy = Math.max(p.vy, 3);   // von unten an einen fliegenden Boss gestoßen: nur abprallen
+      } else { die(); return true; }
+    }
+    return false;
+  }
+
   function clearText() {
     return `Geschafft in ${fmtTime(levelTime)}.${level.newTime ? ' Neue Bestzeit!' : ''}`;
   }
@@ -1001,6 +1136,7 @@
       }
     }
     enemies = enemies.filter(e => e.dead >= 0 && !(e.squashed && e.dead === 0));
+    if (updateBoss()) return;
 
     // Fahne
     if (p.x + p.w > level.flag * T + 12) {
@@ -1244,6 +1380,76 @@
   }
 
 
+  function drawBoss(b) {
+    if (b.hurt && Math.floor(time / 4) % 2) return;
+    const x = b.x - camX, y = b.y, w = b.w, h = b.h, f = b.face, cx = x + w / 2;
+    const tri = (ax, ay, bx, by, qx, qy) => { ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.lineTo(qx, qy); ctx.fill(); };
+    const dot = (dx, dy, r) => { ctx.beginPath(); ctx.arc(dx, dy, r, 0, Math.PI * 2); ctx.fill(); };
+    const crown = (kx, ky, kw) => {
+      ctx.fillStyle = '#ffd34d'; ctx.beginPath(); ctx.moveTo(kx, ky); ctx.lineTo(kx, ky - 12); ctx.lineTo(kx + kw * 0.25, ky - 5);
+      ctx.lineTo(kx + kw / 2, ky - 14); ctx.lineTo(kx + kw * 0.75, ky - 5); ctx.lineTo(kx + kw, ky - 12); ctx.lineTo(kx + kw, ky); ctx.fill();
+      ctx.fillStyle = '#ff5d73'; dot(kx + kw / 2, ky - 4, 2.5);
+    };
+    const eyes = (ex, ey, sz, angry) => {
+      ctx.fillStyle = '#fff'; ctx.fillRect(ex - sz * 2.2, ey, sz * 1.6, sz * 2); ctx.fillRect(ex + sz * 0.6, ey, sz * 1.6, sz * 2);
+      ctx.fillStyle = '#1b1530'; ctx.fillRect(ex - sz * 1.6 + f * 2, ey + sz * 0.6, sz * 0.8, sz * 1.2); ctx.fillRect(ex + sz * 1.2 + f * 2, ey + sz * 0.6, sz * 0.8, sz * 1.2);
+      if (angry) { ctx.fillRect(ex - sz * 2.4, ey - 3, sz * 2, 3); ctx.fillRect(ex + sz * 0.4, ey - 3, sz * 2, 3); }
+    };
+    if (b.type === 'slime') {
+      const sq = b.onGround ? Math.sin(time * 0.2) * 2 : -4;
+      ctx.fillStyle = '#9b4bd9';
+      ctx.beginPath(); ctx.moveTo(x - sq, y + h); ctx.quadraticCurveTo(cx, y - 24 - sq, x + w + sq, y + h); ctx.fill();
+      ctx.fillStyle = '#c38af0'; ctx.beginPath(); ctx.ellipse(cx - 12, y + 14, 8, 5, -0.4, 0, Math.PI * 2); ctx.fill();
+      eyes(cx + f * 6, y + 18, 5, b.hp < b.maxHp);
+      ctx.fillStyle = '#5a2390'; ctx.fillRect(cx - 10 + f * 6, y + 38, 20, 4);
+      crown(cx - 16, y + 2, 32);
+    } else if (b.type === 'batqueen') {
+      const flap = Math.sin(time * 0.3) * 16;
+      ctx.fillStyle = '#3d2a6b';
+      tri(cx, y + 18, x - 30, y + flap, x + 6, y + 34); tri(cx, y + 18, x + w + 30, y + flap, x + w - 6, y + 34);
+      ctx.fillStyle = '#5b3fa0'; ctx.beginPath(); ctx.ellipse(cx, y + 22, 24, 20, 0, 0, Math.PI * 2); ctx.fill();
+      tri(cx - 18, y + 8, cx - 14, y - 8, cx - 6, y + 4); tri(cx + 18, y + 8, cx + 14, y - 8, cx + 6, y + 4);
+      ctx.fillStyle = '#ff3b4e'; dot(cx - 8 + f * 2, y + 20, 4); dot(cx + 8 + f * 2, y + 20, 4);
+      ctx.fillStyle = '#fff'; tri(cx - 6, y + 32, cx - 3, y + 38, cx, y + 32); tri(cx, y + 32, cx + 3, y + 38, cx + 6, y + 32);
+      crown(cx - 12, y + 4, 24);
+    } else if (b.type === 'golem') {
+      ctx.fillStyle = '#4d4860'; roundRect(x + 4, y + h - 10, 20, 10, 3); ctx.fill(); roundRect(x + w - 24, y + h - 10, 20, 10, 3); ctx.fill();
+      ctx.fillStyle = '#6e6a80'; roundRect(x, y, w, h - 8, 10); ctx.fill();
+      ctx.fillStyle = '#58546a'; ctx.fillRect(x + 8, y + 32, w - 16, 4); ctx.fillRect(x + 14, y + 42, 4, 10); ctx.fillRect(x + w - 18, y + 42, 4, 10);
+      const rage = b.maxHp - b.hp;
+      ctx.fillStyle = rage >= 2 ? '#ff3b4e' : '#ffd34d'; dot(cx + f * 8, y + 18, 8);
+      ctx.fillStyle = '#1b1530'; dot(cx + f * 10, y + 18, 3);
+      ctx.fillStyle = '#2b2838'; roundRect(f > 0 ? x + w - 6 : x - 18, y + 30, 24, 14, 4); ctx.fill();
+      ctx.fillStyle = '#15131c'; dot(f > 0 ? x + w + 18 : x - 18, y + 37, 5);
+    } else if (b.type === 'dragon') {
+      const flap = Math.sin(time * 0.25) * 14;
+      ctx.fillStyle = '#b8282f';
+      tri(cx - 10, y + 16, cx - 34, y - 18 + flap, cx + 10, y + 12);
+      tri(cx + 10, y + 16, cx + 30, y - 22 + flap, cx + 16, y + 12);
+      tri(cx - f * 30, y + 26, cx - f * 64, y + 18 + flap * 0.3, cx - f * 30, y + 40);
+      ctx.fillStyle = '#e8394d'; ctx.beginPath(); ctx.ellipse(cx, y + 30, 34, 18, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ffb36b'; ctx.beginPath(); ctx.ellipse(cx, y + 36, 22, 9, 0, 0, Math.PI * 2); ctx.fill();
+      const hx = cx + f * 34;
+      ctx.fillStyle = '#e8394d'; dot(hx, y + 16, 15);
+      ctx.fillStyle = '#ffd34d'; tri(hx - 8, y + 5, hx - f * 4, y - 10, hx, y + 4); tri(hx + 2, y + 4, hx + f * 8, y - 8, hx + 8, y + 6);
+      ctx.fillStyle = '#fff'; ctx.fillRect(hx + f * 3 - 3, y + 10, 7, 7);
+      ctx.fillStyle = '#1b1530'; ctx.fillRect(hx + f * 5 - 1, y + 12, 3, 4);
+      ctx.fillStyle = '#7a1d08'; dot(hx + f * 12, y + 21, 2);
+      if (Math.sin(time * 0.2) > 0.6) { ctx.fillStyle = '#ffb000'; tri(hx + f * 14, y + 18, hx + f * 30, y + 14 + Math.sin(time) * 3, hx + f * 14, y + 26); }
+    }
+  }
+
+  function drawBossBar(b) {
+    const bw = Math.min(260, viewW - 40), bx = (viewW - bw) / 2, by = 18;
+    ctx.fillStyle = 'rgba(27,21,48,.75)'; roundRect(bx - 8, by - 6, bw + 16, 40, 6); ctx.fill();
+    ctx.font = '13px Silkscreen, monospace'; ctx.textAlign = 'center'; ctx.fillStyle = '#ffffff';
+    ctx.fillText(b.name, viewW / 2, by + 9);
+    ctx.fillStyle = '#4a3b78'; ctx.fillRect(bx, by + 16, bw, 10);
+    ctx.fillStyle = '#ff5d73'; ctx.fillRect(bx, by + 16, bw * Math.max(0, b.hp) / b.maxHp, 10);
+    ctx.fillStyle = 'rgba(27,21,48,.6)';
+    for (let i = 1; i < b.maxHp; i++) ctx.fillRect(bx + bw * i / b.maxHp - 1, by + 16, 2, 10);
+  }
+
   function drawEnemy(e) {
     const x = e.x - camX, y = e.y;
     if (e.type === 'bat') {
@@ -1392,6 +1598,13 @@
       ctx.fillStyle = '#ffd34d'; ctx.beginPath(); ctx.arc(fx2, f.y + (f.vy < 0 ? -3 : 3), 5, 0, Math.PI * 2); ctx.fill();
     }
     for (const e of enemies) drawEnemy(e);
+    if (boss) drawBoss(boss);
+    for (const f of bossShots) {
+      const fx3 = f.x - camX;
+      ctx.fillStyle = 'rgba(255,140,40,.35)'; ctx.beginPath(); ctx.arc(fx3, f.y, 12, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ff6a1f'; ctx.beginPath(); ctx.arc(fx3, f.y, 8, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ffd34d'; ctx.beginPath(); ctx.arc(fx3, f.y + 2, 4, 0, Math.PI * 2); ctx.fill();
+    }
     drawPlayer(player);
 
     for (const p of particles) { ctx.globalAlpha = Math.min(1, p.life / 20); ctx.fillStyle = p.color; ctx.fillRect(p.x - camX - 2, p.y - 2, 4, 4); }
@@ -1403,6 +1616,7 @@
       ctx.fillStyle = '#fff'; ctx.fillText(p.text, p.x - camX, p.y);
     }
     ctx.globalAlpha = 1;
+    if (boss && boss.active && !boss.dying) drawBossBar(boss);
   }
 
   // ---------- Schleife ----------
@@ -1421,7 +1635,7 @@
       loadLevel(saved.level); state = 'play'; $('overlay').hidden = true;
     } else {
       loadLevel(0);
-      showOverlay('Hüpfi springt', 'Sammle Münzen, spring auf Gegner und erreiche die Fahne. Zehn Welten warten.', "Los geht's", newGame);
+      showOverlay('Hüpfi springt', 'Sammle Münzen, spring auf Gegner und erreiche die Fahne. Vierzehn Welten warten.', "Los geht's", newGame);
     }
     requestAnimationFrame(frame);
   }
