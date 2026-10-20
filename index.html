@@ -187,7 +187,7 @@
       L.coins(29, 10, 3);
       L.plat(36, 10, 3); L.plat(41, 8, 3); L.coins(41, 7, 3);
       L.enemy(45, 12); L.enemy(49, 12);
-      L.spikes(52, 2); L.coins(52, 9, 2);
+      L.coins(52, 10, 2);
       L.col(62, 12); L.col(63, 11); L.col(64, 10); L.col(65, 9);
       L.coins(66, 6, 3);
       L.plat(70, 9, 4); L.enemy(71, 8);
@@ -197,13 +197,13 @@
     () => makeLevel('2', 110, 1, L => {
       L.ground(0, 15); L.ground(19, 31); L.ground(36, 40); L.ground(45, 70); L.ground(75, 109);
       L.coins(16, 10, 3);
-      L.plat(22, 10, 3); L.coins(22, 9, 3);
+      L.coins(22, 10, 3);
       L.enemy(25, 12); L.enemy(29, 12);
       L.coins(32, 9, 4);
       L.coins(41, 10, 4);
       L.spikes(50, 3); L.coins(50, 9, 3);
       L.plat(55, 10, 5); L.enemy(57, 9); L.coins(55, 9, 2);
-      L.spring(62); L.coins(62, 6, 1); L.coins(62, 5, 1); L.coins(62, 4, 1);
+      L.spring(47); L.coins(47, 6, 1); L.coins(47, 5, 1); L.coins(47, 4, 1);
       L.enemy(65, 12); L.enemy(68, 12);
       L.coins(71, 10, 4);
       L.spikes(80, 2); L.spikes(86, 2);
@@ -218,11 +218,11 @@
       L.enemy(20, 12); L.enemy(23, 12);
       L.coins(26, 9, 4);
       L.coins(34, 10, 4);
-      L.spikes(42, 3); L.coins(42, 9, 3);
-      L.plat(46, 10, 3); L.coins(46, 9, 3);
+      L.spikes(44, 3); L.coins(44, 9, 3);
+      L.coins(48, 10, 3);
       L.enemy(50, 12); L.enemy(53, 12); L.enemy(57, 12);
       L.coins(61, 9, 4);
-      L.spikes(69, 3); L.spikes(76, 2);
+      L.spikes(69, 3); L.coins(69, 9, 3);
       L.coins(81, 10, 4);
       L.col(90, 12); L.col(91, 11); L.col(92, 10); L.col(93, 9);
       L.spikes(98, 3); L.coins(98, 9, 3);
@@ -237,7 +237,7 @@
       L.enemy(17, 12);
       L.coins(21, 10, 4);
       L.plat(29, 10, 2); L.plat(33, 8, 2); L.plat(37, 6, 2); L.coins(37, 5, 2);
-      L.enemy(31, 12); L.enemy(41, 12);
+      L.enemy(41, 12); L.enemy(43, 12);
       L.coins(46, 10, 3);
       L.spring(54); L.plat(56, 5, 4); L.coins(56, 4, 4);
       L.spikes(62, 3); L.coins(62, 9, 3);
@@ -250,13 +250,13 @@
       L.flag(115);
     }),
     () => makeLevel('5', 130, 4, L => {
-      L.ground(0, 14); L.ground(18, 34); L.ground(38, 39); L.ground(43, 64); L.ground(68, 90); L.ground(94, 129);
+      L.ground(0, 14); L.ground(18, 34); L.ground(37, 40); L.ground(43, 64); L.ground(68, 90); L.ground(94, 129);
       L.coins(15, 10, 3);
-      L.plat(24, 10, 4); L.coins(24, 9, 4);
+      L.coins(24, 10, 4);
       L.enemy(22, 12); L.enemy(27, 12); L.enemy(31, 12);
-      L.coins(35, 10, 3); L.coins(40, 10, 3);
-      L.spikes(48, 2); L.spikes(54, 2); L.spikes(60, 2);
-      L.coins(48, 9, 2); L.coins(54, 9, 2); L.coins(60, 9, 2);
+      L.coins(35, 10, 2); L.coins(41, 10, 2);
+      L.spikes(48, 2); L.spikes(55, 2);
+      L.coins(48, 9, 2); L.coins(55, 9, 2); L.coins(60, 10, 2);
       L.coins(65, 10, 3);
       L.spring(71); L.plat(73, 6, 5); L.coins(73, 5, 5); L.enemy(75, 5);
       L.enemy(80, 12); L.enemy(85, 12);
@@ -268,18 +268,17 @@
       L.flag(125);
     }),
     () => makeLevel('6', 140, 5, L => {
-      L.ground(0, 12); L.ground(16, 28); L.ground(32, 33); L.ground(37, 55); L.ground(59, 62);
+      L.ground(0, 12); L.ground(16, 28); L.ground(31, 34); L.ground(37, 55); L.ground(59, 62);
       L.ground(66, 85); L.ground(89, 104); L.ground(108, 139);
       L.coins(13, 10, 3);
       L.enemy(19, 12); L.enemy(23, 12); L.enemy(27, 12);
-      L.coins(29, 10, 3); L.coins(34, 10, 3);
-      L.spikes(41, 3); L.coins(41, 9, 3);
+      L.coins(29, 10, 2); L.coins(35, 10, 2);
+      L.spikes(43, 3); L.coins(43, 9, 3);
       L.plat(46, 10, 3); L.enemy(47, 9); L.coins(46, 9, 1);
-      L.spikes(51, 2);
       L.coins(56, 10, 3); L.coins(63, 10, 3);
       L.plat(68, 10, 3); L.plat(72, 8, 3); L.plat(76, 6, 3); L.coins(76, 5, 3);
-      L.enemy(70, 12); L.enemy(79, 12);
-      L.spikes(82, 2);
+      L.enemy(74, 12); L.enemy(78, 12);
+      L.spikes(80, 2);
       L.coins(86, 10, 3);
       L.spring(92); L.coins(92, 6, 1); L.coins(92, 5, 1); L.coins(92, 4, 1);
       L.enemy(96, 12); L.enemy(99, 12); L.enemy(102, 12);
@@ -515,7 +514,7 @@
     if (!keys.jump && p.vy < -5 && !p.boosted) p.vy = -5;
     if (p.vy >= 0) p.boosted = false;
     p.vy = Math.min(p.vy + 0.55, 12);
-    const wasAir = !p.onGround;
+    const wasAir = !p.onGround, fallVy = p.vy;
     moveBox(p);
     if (p.onGround && wasAir) p.squash = 6;
     p.squash *= 0.8;
@@ -530,7 +529,7 @@
     // Sprungfeder
     for (let tx = Math.floor(p.x / T); tx <= Math.floor((p.x + p.w - 1) / T); tx++) {
       const ty = Math.floor((p.y + p.h - 1) / T);
-      if (tileAt(tx, ty) === 4 && p.vy >= 0 && p.y + p.h > ty * T + T - 14) {
+      if (tileAt(tx, ty) === 4 && fallVy > 1 && p.y + p.h > ty * T + T - 14) {
         p.vy = -18; p.boosted = true; p.squash = -8; level.springAt = { tx, t: time };
         beep(300, 0.25, 'triangle', 600, 0.1);
         break;
