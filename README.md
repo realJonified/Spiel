@@ -76,3 +76,11 @@ Gekaufte Skins kannst du jederzeit wieder anziehen. Geldbeutel und Skins werden 
 - **Bestzeit pro Welt:** wie schnell du jede Welt bis zur Fahne geschafft hast.
 
 Die Rekorde werden nur in deinem Browser auf diesem Gerät gespeichert.
+
+## Admin-Modus (geheim)
+
+- **Anschalten:** im Startmenü 5-mal schnell auf den Titel „Hüpfi springt“ tippen oder am PC einfach `admin` tippen.
+  Genauso schaltest du ihn wieder aus, oder mit dem Knopf „Admin-Modus aus“.
+- **Alle Skins** sind im Shop frei und können ohne Münzen angezogen werden.
+- **Welt wählen:** Über „Welten“ oben oder „Welt wählen“ im Menü startest du direkt in einer der 14 Welten.
+- Im Admin-Modus werden keine Einträge in der Bestenliste und keine Bestzeiten gespeichert.

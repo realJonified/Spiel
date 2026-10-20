@@ -130,8 +130,28 @@
   .times li.none .t { color: var(--muted); }
   .rec-actions { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; }
   .rec-empty { color: var(--muted); }
-  .menu-row { display: flex; gap: 10px; }
-  .menu-row button { flex: 1; }
+  .menu-row { display: flex; flex-wrap: wrap; gap: 10px; }
+  .menu-row button { flex: 1 1 7rem; }
+  .admin-badge {
+    font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink);
+    background: var(--gold); border-radius: 4px; padding: 3px 7px;
+  }
+  .toast {
+    position: fixed; left: 50%; top: calc(64px + env(safe-area-inset-top, 0px)); transform: translateX(-50%); z-index: 6;
+    font-family: var(--font-display); font-size: 13px; color: var(--ink); background: var(--gold);
+    border-radius: 4px; padding: 8px 14px; box-shadow: 0 4px 0 var(--ink); pointer-events: none;
+  }
+  #worlds { position: fixed; z-index: 5; padding-block: 8px; }
+  .card.worlds { max-width: 34rem; text-align: left; gap: 12px; }
+  .world-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr)); gap: 8px; }
+  .card .world-grid button {
+    width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: left;
+    background: var(--ink); color: var(--text); box-shadow: none; border: 2px solid var(--panel-edge); padding: 10px 12px;
+  }
+  .card .world-grid button:hover { border-color: var(--leaf); }
+  .world-grid .wn { font-size: 15px; }
+  .world-grid .wt { font-family: var(--font-body); font-size: 13px; letter-spacing: 0; color: var(--muted); }
+  .world-grid .boss .wt { color: var(--berry); }
 
   #shop { position: fixed; z-index: 5; padding-block: 8px; }
   .card.shop { max-width: 36rem; text-align: left; gap: 12px; }
@@ -184,7 +204,9 @@
     <div class="stat"><span class="coin">●</span><span id="hudCoins">0</span></div>
     <div class="stat"><span class="heart">♥</span><span id="hudLives">3</span></div>
     <div class="stat"><span class="label">Punkte</span><span id="hudScore">0</span></div>
+    <span class="admin-badge" id="adminBadge" hidden>Admin</span>
     <div class="spacer"></div>
+    <button id="worldsBtn" type="button" hidden>Welten</button>
     <button id="shopBtn" type="button">Shop</button>
     <button id="recordsBtn" type="button">Rekorde</button>
     <button id="soundBtn" type="button" aria-pressed="true">Ton an</button>
@@ -203,12 +225,27 @@
         </label>
         <button id="ovBtn" type="button">Los geht's</button>
         <div class="menu-row">
+          <button id="ovWorlds" class="ghost" type="button" hidden>Welt wählen</button>
           <button id="ovShop" class="ghost" type="button">Shop</button>
           <button id="ovRecords" class="ghost" type="button">Bestenliste</button>
         </div>
         <div class="best" id="ovBest"></div>
       </div>
     </div>
+
+    <div class="overlay" id="worlds" hidden>
+      <div class="card worlds" role="dialog" aria-labelledby="worldsTitle">
+        <h2 id="worldsTitle">Welt wählen</h2>
+        <p class="shop-note">Admin-Modus: Du startest direkt in der gewählten Welt. Rekorde werden dabei nicht gespeichert.</p>
+        <ul class="world-grid" id="worldList"></ul>
+        <div class="rec-actions">
+          <button id="adminOff" class="ghost" type="button">Admin-Modus aus</button>
+          <button id="worldsClose" type="button">Schließen</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" hidden></div>
 
     <div class="overlay" id="shop" hidden>
       <div class="card shop" role="dialog" aria-labelledby="shopTitle">
@@ -575,6 +612,11 @@
   const saveShop = () => { try { localStorage.setItem(SHOP_KEY, JSON.stringify(shop)); } catch (e) {} };
   const currentSkin = () => SKINS.find(k => k.id === shop.skin) || SKINS[0];
 
+  // Admin-Modus: alle Skins frei und freie Weltauswahl. Geheim an/aus: 5x auf den Titel tippen oder "admin" tippen.
+  let admin = false;
+  try { admin = localStorage.getItem('huepfi-admin') === '1'; } catch (e) {}
+  const ownsSkin = id => admin || shop.owned.includes(id);
+
   // ---------- Rekorde (bleiben nur in diesem Browser gespeichert) ----------
   const REC_KEY = 'huepfi-records';
   let records = { runs: [], times: {}, name: '' };
@@ -592,7 +634,7 @@
   // Trägt die Runde ein und gibt den Platz zurück (0 = nicht in den Top 10)
   function addRun(won) {
     lastRun = null;
-    if (score <= 0) return 0;
+    if (score <= 0 || admin) return 0;
     lastRun = { name: records.name, score, coins: coinCount, world: level.name, won, date: Date.now() };
     records.runs.push(lastRun);
     records.runs.sort((a, b) => b.score - a.score);
@@ -672,6 +714,8 @@
   addEventListener('keydown', e => {
     if (!$('records').hidden) { if (e.code === 'Escape') closeRecords(); return; }
     if (!$('shop').hidden) { if (e.code === 'Escape') closeShop(); return; }
+    if (!$('worlds').hidden) { if (e.code === 'Escape') closeDialog('worlds'); return; }
+    if (e.key && e.key.length === 1 && e.target.tagName !== 'INPUT') { typed = (typed + e.key.toLowerCase()).slice(-5); if (typed === 'admin') { typed = ''; setAdmin(!admin); } }
     if (e.target.tagName === 'INPUT' && e.code !== 'Enter') return;
     const k = KEYMAP[e.code];
     if (k) {
@@ -792,7 +836,7 @@
   function closeDialog(id) {
     $(id).hidden = true;
     if (document.activeElement) document.activeElement.blur();
-    if (recResume && $('records').hidden && $('shop').hidden) { state = 'play'; recResume = false; }
+    if (recResume && $('records').hidden && $('shop').hidden && $('worlds').hidden) { state = 'play'; recResume = false; }
   }
   function openRecords() { renderRecords(); openDialog('records', 'recClose'); }
   function closeRecords() { resetClear(); closeDialog('records'); }
@@ -805,11 +849,11 @@
     drawHuepfi(g, 13.5, 19.5, 22, 28, 1, 0, skin);
   }
   function renderShop() {
-    $('wallet').textContent = `● ${shop.wallet}`;
+    $('wallet').textContent = admin ? `● ${shop.wallet} · Admin: alle frei` : `● ${shop.wallet}`;
     const ul = $('skinList');
     ul.textContent = '';
     for (const skin of SKINS) {
-      const owned = shop.owned.includes(skin.id), on = shop.skin === skin.id;
+      const owned = ownsSkin(skin.id), on = shop.skin === skin.id;
       const li = document.createElement('li'); li.className = 'skin' + (on ? ' on' : '');
       const cv = document.createElement('canvas'); drawSkinPreview(cv, skin);
       const name = document.createElement('div'); name.className = 'name'; name.textContent = skin.name;
@@ -833,6 +877,56 @@
   $('shopBtn').addEventListener('click', openShop);
   $('ovShop').addEventListener('click', openShop);
   $('shopClose').addEventListener('click', closeShop);
+
+  const THEME_NAMES = { 0: 'Wiese', 1: 'Abendrot', 2: 'Nacht', 3: 'Schnee', 4: 'Wüste', 5: 'Lava', 6: 'Wolken', 7: 'Höhle', 8: 'Gewitter' };
+  let typed = '', titleTaps = 0, titleTimer = 0, toastTimer = 0;
+  function toast(msg) {
+    $('toast').textContent = msg; $('toast').hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => { $('toast').hidden = true; }, 2200);
+  }
+  function setAdmin(on) {
+    admin = on;
+    try { localStorage.setItem('huepfi-admin', on ? '1' : '0'); } catch (e) {}
+    if (!on && !shop.owned.includes(shop.skin)) { shop.skin = 'huepfi'; }
+    applyAdmin();
+    if (!$('shop').hidden) renderShop();
+    if (!on && !$('worlds').hidden) closeDialog('worlds');
+    toast(on ? 'Admin-Modus an' : 'Admin-Modus aus');
+  }
+  function applyAdmin() {
+    $('adminBadge').hidden = !admin; $('worldsBtn').hidden = !admin; $('ovWorlds').hidden = !admin;
+  }
+  function renderWorlds() {
+    const ul = $('worldList');
+    ul.textContent = '';
+    LEVELS.forEach((make, i) => {
+      const L = make();
+      const li = document.createElement('li');
+      const btn = document.createElement('button'); btn.type = 'button';
+      if (L.boss) btn.className = 'boss';
+      const n = document.createElement('span'); n.className = 'wn'; n.textContent = `Welt ${L.name}`;
+      const t = document.createElement('span'); t.className = 'wt';
+      t.textContent = L.boss ? `Boss: ${BOSSES[L.boss.type].name}` : THEME_NAMES[L.theme];
+      btn.append(n, t);
+      btn.onclick = () => {
+        $('worlds').hidden = true; $('overlay').hidden = true; recResume = false;
+        if (document.activeElement) document.activeElement.blur();
+        score = 0; lives = 3; coinCount = 0; loadLevel(i); state = 'play';
+      };
+      li.appendChild(btn); ul.appendChild(li);
+    });
+  }
+  const openWorlds = () => { renderWorlds(); openDialog('worlds', 'worldsClose'); };
+  $('worldsBtn').addEventListener('click', openWorlds);
+  $('ovWorlds').addEventListener('click', openWorlds);
+  $('worldsClose').addEventListener('click', () => closeDialog('worlds'));
+  $('adminOff').addEventListener('click', () => setAdmin(false));
+  $('ovTitle').addEventListener('click', () => {
+    titleTaps++;
+    clearTimeout(titleTimer); titleTimer = setTimeout(() => { titleTaps = 0; }, 1500);
+    if (titleTaps >= 5) { titleTaps = 0; setAdmin(!admin); }
+  });
+  applyAdmin();
   function resetClear() {
     clearTimeout(clearArmed); clearArmed = 0;
     $('recClear').textContent = 'Rekorde löschen'; $('recClear').classList.remove('danger');
@@ -1144,7 +1238,7 @@
       score += 500 + bonus; popup(p.x, p.y - 20, `+${500 + bonus}`);
       sfx.flag(); state = 'clear'; stateTimer = 110;
       const prev = records.times[level.name];
-      level.newTime = !prev || levelTime < prev;
+      level.newTime = !admin && (!prev || levelTime < prev);
       if (level.newTime) { records.times[level.name] = levelTime; saveRecords(); popup(p.x, p.y - 44, 'Bestzeit!'); }
       burst(level.flag * T + 16, p.y, '#6bd16f', 20);
     }
