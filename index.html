@@ -196,16 +196,16 @@
       padding-right: max(16px, env(safe-area-inset-right, 0px));
       padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
     }
-    .touch .group { display: flex; gap: 12px; }
+    .touch .group { display: flex; gap: 18px; }
     .touch button {
       touch-action: none;
-      width: 64px; height: 64px; border-radius: 50%;
-      font-family: var(--font-display); font-size: 22px; color: var(--text);
+      width: 96px; height: 96px; border-radius: 50%;
+      font-family: var(--font-display); font-size: 33px; color: var(--text);
       background: var(--ink);
       border: 3px solid var(--panel-edge);
     }
     .touch button.on { background: var(--panel-edge); }
-    .touch .jump { width: 76px; height: 64px; border-radius: 32px; color: var(--gold); }
+    .touch .jump { width: 114px; height: 96px; border-radius: 48px; color: var(--gold); }
     .card .keys.desk { display: none; }
   }
   @media (pointer: fine) { .card .keys.phone { display: none; } }
