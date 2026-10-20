@@ -16,7 +16,9 @@ Länger gedrückt halten = höher springen.
 
 ## Regeln
 
-- 3 Welten (Wiese, Abendrot, Nacht), am Ende jeder Welt wartet die Fahne.
+- 6 Welten (Wiese, Abendrot, Nacht, Schnee, Wüste, Lava-Burg), am Ende jeder Welt wartet die Fahne.
+- Rote Sprungfedern schleudern dich hoch hinaus.
+- Bei Game Over geht es in der Welt weiter, in der du verloren hast.
 - Münzen geben 10 Punkte, alle 50 Münzen gibt es ein Extraleben.
 - Auf Gegner springen gibt 100 Punkte – seitlich berühren kostet ein Leben.
 - Stacheln und Abgründe meiden.
