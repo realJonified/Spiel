@@ -17,14 +17,14 @@ Länger gedrückt halten = höher springen.
 
 ## Regeln
 
-- 22 Welten, am Ende jeder Welt wartet die Fahne.
+- 42 Welten, am Ende jeder Welt wartet die Fahne.
 - Ab Welt 7 gibt es neue Hindernisse:
   - fahrende Plattformen, die hin und her oder auf und ab fahren
   - Fledermäuse, die durch die Luft flattern (draufspringen gibt 150 Punkte)
   - Bröckelsteine, die kurz nach dem Betreten herunterfallen
   - Feuerbälle, die aus der Lava springen
   - Kanonen, die Kugeln auf dich schießen (auf Kugeln kann man draufspringen)
-- In Welt 11 bis 22 wartet am Ende ein Boss. Erst wenn er besiegt ist, geht das Tor zur Fahne auf:
+- In Welt 11 bis 42 wartet am Ende ein Boss. Erst wenn er besiegt ist, geht das Tor zur Fahne auf:
   - Welt 11: **König Matsch** (3 Treffer) hüpft durch die Arena
   - Welt 12: **Fledermaus-Königin** (3 Treffer) stürzt sich von oben herab
   - Welt 13: **Kanonen-Golem** (4 Treffer) schießt Kugeln
@@ -37,8 +37,13 @@ Länger gedrückt halten = höher springen.
   - Welt 20: **Lava-Golem Magmo** (8 Treffer) lässt Lavasäulen aus dem Boden schießen und macht Schockwellen
   - Welt 21: **Schatten-Hüpfi** (8 Treffer) ist schnell, springt und wirft Schattenkugeln
   - Welt 22: **Gewitterkönig Blitzo** (10 Treffer) lässt Blitze einschlagen
+  - Welt 23 bis 42: **20 sehr starke Bosse** mit 9 bis 16 Treffern, zum Beispiel Moosmonster Grünzahn,
+    Sternenauge, Höllenhund Glut, Phönix Lodera, Robo-Titan, Schattenkaiser und als Allerletzter Chaos-König Kaos.
+    Jeder kombiniert eine Bewegung (stampfen, springen, rasen, fliegen, teleportieren) mit mehreren Angriffen.
 - Ab Welt 19 gibt es neue Hindernisse: **Laserschranken**, die an- und ausgehen, **Feuerstäbe**, die sich drehen,
   und **Stampfblöcke**, die herunterkrachen, wenn du darunter läufst.
+- Ab Welt 23 kommen dazu: **Kreissägen**, **Blinkblöcke** (pink und blau im Wechsel), **Förderbänder**,
+  die dich schieben, und **Eisboden**, auf dem du rutschst.
   - Jeder Treffer gibt 300 Punkte, ein besiegter Boss 2000 Punkte.
   - In jedem Bosskampf hast du eine Waffe (Taste X oder ★-Knopf). Sie fliegt von selbst auf den Boss,
     danach musst du gut 2 Sekunden warten, bis du wieder schießen kannst.
