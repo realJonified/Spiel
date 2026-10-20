@@ -88,6 +88,48 @@
   }
   .card button:active { transform: translateY(3px); box-shadow: 0 1px 0 color-mix(in srgb, var(--leaf) 50%, var(--ink)); }
   .best { font-family: var(--font-display); font-size: 12px; color: var(--muted); }
+  .card { max-height: calc(100% - 16px); overflow-y: auto; }
+  .card button.ghost {
+    background: transparent; color: var(--text); border: 2px solid var(--panel-edge); box-shadow: none;
+    font-size: 13px; padding: 9px 14px;
+  }
+  .card button.ghost:active { transform: none; box-shadow: none; }
+  .card button.danger { border-color: var(--berry); color: var(--berry); }
+  .namefield { display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--muted); text-align: left; }
+  .namefield input {
+    font: inherit; font-size: 16px; color: var(--text); background: var(--ink);
+    border: 2px solid var(--panel-edge); border-radius: 4px; padding: 8px 10px;
+  }
+  .namefield input:focus-visible { outline: 3px solid var(--gold); outline-offset: 1px; }
+
+  #records { position: fixed; z-index: 5; padding-block: 8px; }
+  .card.records { max-width: 34rem; text-align: left; gap: 12px; }
+  .card h2 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 24px; color: var(--gold); text-wrap: balance; }
+  .card h3 {
+    margin: 4px 0 0; font-family: var(--font-display); font-weight: 400; font-size: 11px;
+    color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .table-wrap { overflow-x: auto; }
+  .records table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: 15px; }
+  .records th {
+    text-align: left; font-weight: 400; font-size: 11px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.06em; padding: 4px 6px; border-bottom: 2px solid var(--panel-edge);
+  }
+  .records td { padding: 6px; border-bottom: 1px solid color-mix(in srgb, var(--panel-edge) 50%, transparent); white-space: nowrap; }
+  .records td:nth-child(2) { white-space: normal; overflow-wrap: anywhere; }
+  .records th:nth-child(3), .records td:nth-child(3) { text-align: right; }
+  .records tr.new td { color: var(--gold); }
+  .records td:first-child { color: var(--muted); width: 2ch; }
+  .records tr:first-child td:first-child { color: var(--gold); }
+  .times { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr)); gap: 6px; }
+  .times li {
+    display: flex; justify-content: space-between; gap: 6px; padding: 6px 8px;
+    background: var(--ink); border-radius: 4px; font-variant-numeric: tabular-nums;
+  }
+  .times .w { color: var(--muted); font-size: 13px; }
+  .times li.none .t { color: var(--muted); }
+  .rec-actions { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; }
+  .rec-empty { color: var(--muted); }
 
   .touch { display: none; }
   @media (pointer: coarse) {
@@ -123,6 +165,7 @@
     <div class="stat"><span class="heart">♥</span><span id="hudLives">3</span></div>
     <div class="stat"><span class="label">Punkte</span><span id="hudScore">0</span></div>
     <div class="spacer"></div>
+    <button id="recordsBtn" type="button">Rekorde</button>
     <button id="soundBtn" type="button" aria-pressed="true">Ton an</button>
   </div>
   <div class="stage" id="stage">
@@ -134,8 +177,32 @@
         <p id="ovText">Sammle Münzen, spring auf Gegner und erreiche die Fahne. Zehn Welten warten.</p>
         <p class="keys desk"><kbd>←</kbd> <kbd>→</kbd> laufen · <kbd>Leertaste</kbd> springen · <kbd>P</kbd> Pause</p>
         <p class="keys phone">Links unten laufen, rechts unten springen.</p>
+        <label class="namefield" id="nameField" hidden>Dein Name für die Bestenliste
+          <input id="playerName" type="text" maxlength="12" autocomplete="off" placeholder="Hüpfi">
+        </label>
         <button id="ovBtn" type="button">Los geht's</button>
+        <button id="ovRecords" class="ghost" type="button">Bestenliste</button>
         <div class="best" id="ovBest"></div>
+      </div>
+    </div>
+
+    <div class="overlay" id="records" hidden>
+      <div class="card records" role="dialog" aria-labelledby="recTitle">
+        <h2 id="recTitle">Deine Rekorde</h2>
+        <h3>Bestenliste</h3>
+        <div class="table-wrap">
+          <table id="recTable">
+            <thead><tr><th>#</th><th>Name</th><th>Punkte</th><th>Welt</th><th>Datum</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <p class="rec-empty" id="recEmpty">Noch keine Einträge. Spiel eine Runde, dann steht dein Ergebnis hier.</p>
+        <h3>Bestzeit pro Welt</h3>
+        <ol class="times" id="recTimes"></ol>
+        <div class="rec-actions">
+          <button id="recClear" class="ghost" type="button">Rekorde löschen</button>
+          <button id="recClose" type="button">Schließen</button>
+        </div>
       </div>
     </div>
 
@@ -386,8 +453,43 @@
   let level, levelIdx = 0, player, enemies, particles = [];
   let score = 0, lives = 3, coinCount = 0, levelStartScore = 0, levelStartCoins = 0;
   let state = 'title', stateTimer = 0, time = 0, camX = 0;
-  let best = 0;
-  try { best = +localStorage.getItem('huepfi-best') || 0; } catch (e) {}
+  let levelTime = 0;
+
+  // ---------- Rekorde (bleiben nur in diesem Browser gespeichert) ----------
+  const REC_KEY = 'huepfi-records';
+  let records = { runs: [], times: {}, name: '' };
+  try {
+    const raw = JSON.parse(localStorage.getItem(REC_KEY) || 'null');
+    if (raw && Array.isArray(raw.runs)) records = { runs: raw.runs, times: raw.times || {}, name: raw.name || '' };
+    else {
+      const old = +localStorage.getItem('huepfi-best') || 0;
+      if (old) records.runs.push({ name: '', score: old, world: '', won: false, date: Date.now() });
+    }
+  } catch (e) {}
+  const saveRecords = () => { try { localStorage.setItem(REC_KEY, JSON.stringify(records)); } catch (e) {} };
+  const bestScore = () => records.runs.length ? records.runs[0].score : 0;
+  let lastRun = null;
+  // Trägt die Runde ein und gibt den Platz zurück (0 = nicht in den Top 10)
+  function addRun(won) {
+    lastRun = null;
+    if (score <= 0) return 0;
+    lastRun = { name: records.name, score, coins: coinCount, world: level.name, won, date: Date.now() };
+    records.runs.push(lastRun);
+    records.runs.sort((a, b) => b.score - a.score);
+    records.runs = records.runs.slice(0, 10);
+    if (!records.runs.includes(lastRun)) lastRun = null;
+    saveRecords();
+    return lastRun ? records.runs.indexOf(lastRun) + 1 : 0;
+  }
+  function rankText(rank) {
+    if (rank === 1) return 'Neuer Rekord! ';
+    if (rank > 1) return `Platz ${rank} in deiner Bestenliste. `;
+    return '';
+  }
+  function fmtTime(frames) {
+    const sec = frames / 60, m = Math.floor(sec / 60);
+    return `${m}:${(sec - m * 60).toFixed(1).padStart(4, '0').replace('.', ',')}`;
+  }
 
   function loadLevel(i) {
     levelIdx = i;
@@ -400,7 +502,7 @@
       ? { ...e, x: e.bx, y: e.by, w: 26, h: 18, vx: 0, dead: 0 }
       : { ...e, w: 26, h: 22, vx: -1.1, vy: 0, dead: 0, onGround: false });
     particles = [];
-    levelStartScore = score; levelStartCoins = coinCount;
+    levelStartScore = score; levelStartCoins = coinCount; levelTime = 0;
     camX = 0;
     updateHud();
   }
@@ -446,6 +548,8 @@
   let jumpPressed = false;
   const KEYMAP = { ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right', Space: 'jump', ArrowUp: 'jump', KeyW: 'jump' };
   addEventListener('keydown', e => {
+    if (!$('records').hidden) { if (e.code === 'Escape') closeRecords(); return; }
+    if (e.target.tagName === 'INPUT' && e.code !== 'Enter') return;
     const k = KEYMAP[e.code];
     if (k) {
       e.preventDefault();
@@ -500,9 +604,11 @@
   // ---------- Overlay ----------
   const overlayVisible = () => !$('overlay').hidden;
   let overlayAction = null;
-  function showOverlay(title, text, btn, action) {
+  function showOverlay(title, text, btn, action, askName = false) {
     $('ovTitle').textContent = title; $('ovText').textContent = text; $('ovBtn').textContent = btn;
-    $('ovBest').textContent = best ? `Rekord: ${best} Punkte` : '';
+    $('ovBest').textContent = bestScore() ? `Rekord: ${bestScore()} Punkte` : '';
+    $('nameField').hidden = !askName || !lastRun;
+    $('playerName').value = records.name;
     overlayAction = action;
     $('overlay').hidden = false;
   }
@@ -524,9 +630,67 @@
     $('hudLives').textContent = lives;
     $('hudScore').textContent = score;
   }
-  function saveBest() {
-    if (score > best) { best = score; try { localStorage.setItem('huepfi-best', best); } catch (e) {} }
+  $('playerName').addEventListener('input', () => {
+    records.name = $('playerName').value.trim().slice(0, 12);
+    if (lastRun) lastRun.name = records.name;
+    saveRecords();
+  });
+
+  function renderRecords() {
+    const tb = $('recTable').querySelector('tbody');
+    tb.textContent = '';
+    records.runs.forEach((r, i) => {
+      const tr = document.createElement('tr');
+      if (r === lastRun) tr.className = 'new';
+      const date = new Date(r.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit' });
+      [i + 1, r.name || 'Hüpfi', r.score, r.won ? 'alle ★' : (r.world || '–'), date].forEach(v => {
+        const td = document.createElement('td'); td.textContent = v; tr.appendChild(td);
+      });
+      tb.appendChild(tr);
+    });
+    $('recTable').hidden = !records.runs.length;
+    $('recEmpty').hidden = !!records.runs.length;
+    const ol = $('recTimes');
+    ol.textContent = '';
+    LEVELS.forEach((_, i) => {
+      const k = String(i + 1), t = records.times[k];
+      const li = document.createElement('li'); if (!t) li.className = 'none';
+      const w = document.createElement('span'); w.className = 'w'; w.textContent = `Welt ${k}`;
+      const tt = document.createElement('span'); tt.className = 't'; tt.textContent = t ? fmtTime(t) : '–';
+      li.append(w, tt); ol.appendChild(li);
+    });
   }
+  let recResume = false, clearArmed = 0;
+  function openRecords() {
+    renderRecords();
+    recResume = state === 'play';
+    if (recResume) state = 'records';
+    $('records').hidden = false;
+    $('recClose').focus();
+  }
+  function closeRecords() {
+    $('records').hidden = true;
+    resetClear();
+    if (document.activeElement) document.activeElement.blur();
+    if (recResume) { state = 'play'; recResume = false; }
+  }
+  function resetClear() {
+    clearTimeout(clearArmed); clearArmed = 0;
+    $('recClear').textContent = 'Rekorde löschen'; $('recClear').classList.remove('danger');
+  }
+  $('recordsBtn').addEventListener('click', openRecords);
+  $('ovRecords').addEventListener('click', openRecords);
+  $('recClose').addEventListener('click', closeRecords);
+  $('recClear').addEventListener('click', () => {
+    if (!clearArmed) {
+      clearArmed = setTimeout(resetClear, 4000);
+      $('recClear').textContent = 'Wirklich löschen?'; $('recClear').classList.add('danger');
+      return;
+    }
+    records.runs = []; records.times = {}; lastRun = null;
+    saveRecords(); resetClear(); renderRecords();
+    $('ovBest').textContent = ''; $('nameField').hidden = true;
+  });
 
   // ---------- Effekte ----------
   function burst(x, y, color, n = 8) {
@@ -544,6 +708,10 @@
     sfx.hurt();
     state = 'dying'; stateTimer = 70;
     player.vy = -9; player.vx = 0;
+  }
+
+  function clearText() {
+    return `Geschafft in ${fmtTime(levelTime)}.${level.newTime ? ' Neue Bestzeit!' : ''}`;
   }
 
   function updateWorld() {
@@ -589,12 +757,12 @@
       if (--stateTimer <= 0) {
         lives--;
         if (lives <= 0) {
-          saveBest();
+          const rank = addRun(false);
           state = 'over';
           const retry = levelIdx;
-          showOverlay('Game Over', `Du hast ${score} Punkte geholt.`, `Nochmal ab Welt ${level.name}`, () => {
+          showOverlay('Game Over', `${rankText(rank)}Du hast ${score} Punkte geholt.`, `Nochmal ab Welt ${level.name}`, () => {
             score = 0; lives = 3; coinCount = 0; loadLevel(retry); state = 'play';
-          });
+          }, true);
         } else {
           score = levelStartScore; coinCount = levelStartCoins;
           loadLevel(levelIdx); state = 'play';
@@ -610,11 +778,11 @@
           const next = levelIdx + 1;
           state = 'between';
           const nl = LEVELS[next]();
-          showOverlay(`Welt ${nl.name}`, `Geschafft! Du hast ${score} Punkte. ${nl.hint}`, 'Weiter', () => { loadLevel(next); state = 'play'; });
+          showOverlay(`Welt ${nl.name}`, `${clearText()} Du hast ${score} Punkte. ${nl.hint}`, 'Weiter', () => { loadLevel(next); state = 'play'; });
         } else {
-          saveBest();
+          const rank = addRun(true);
           state = 'won';
-          showOverlay('Gewonnen!', `Alle Welten geschafft: ${score} Punkte und ${coinCount} Münzen.`, 'Nochmal spielen', newGame);
+          showOverlay('Gewonnen!', `${clearText()} ${rankText(rank)}Alle Welten geschafft: ${score} Punkte und ${coinCount} Münzen.`, 'Nochmal spielen', newGame, true);
         }
       }
       return;
@@ -622,6 +790,7 @@
     if (state !== 'play') return;
 
     const p = player;
+    levelTime++;
     updateWorld();
     if (p.on) {
       // auf einer fahrenden Plattform mitfahren
@@ -727,6 +896,9 @@
       const bonus = Math.max(0, Math.round((ROWS - p.y / T) * 50));
       score += 500 + bonus; popup(p.x, p.y - 20, `+${500 + bonus}`);
       sfx.flag(); state = 'clear'; stateTimer = 110;
+      const prev = records.times[level.name];
+      level.newTime = !prev || levelTime < prev;
+      if (level.newTime) { records.times[level.name] = levelTime; saveRecords(); popup(p.x, p.y - 44, 'Bestzeit!'); }
       burst(level.flag * T + 16, p.y, '#6bd16f', 20);
     }
     updateHud();

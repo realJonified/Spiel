@@ -29,3 +29,13 @@ Länger gedrückt halten = höher springen.
 - Auf Gegner springen gibt 100 Punkte – seitlich berühren kostet ein Leben.
 - Stacheln und Abgründe meiden.
 - Je höher du die Fahne berührst, desto mehr Bonuspunkte.
+
+## Rekorde
+
+Über den Knopf **Rekorde** oben (oder **Bestenliste** im Menü) siehst du deine eigenen Rekorde:
+
+- **Bestenliste:** deine 10 besten Runden mit Name, Punkten, erreichter Welt und Datum.
+  Nach einem Game Over oder dem Sieg kannst du deinen Namen eintragen.
+- **Bestzeit pro Welt:** wie schnell du jede Welt bis zur Fahne geschafft hast.
+
+Die Rekorde werden nur in deinem Browser auf diesem Gerät gespeichert.
