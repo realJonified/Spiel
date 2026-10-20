@@ -1205,11 +1205,11 @@
     gap: [8, (L, o) => { L.ground(o, o + 2); L.coins(o + 3, 10, 3); L.ground(o + 6, o + 7); }],
     spikes: [8, (L, o) => { L.ground(o, o + 7); L.spikes(o + 3, 2); L.coins(o + 3, 9, 2); }],
     plat: [9, (L, o) => { L.ground(o, o + 8); L.plat(o + 2, 10, 3); L.coins(o + 2, 9, 3); L.enemy(o + 6, 12); }],
-    mover: [11, (L, o) => { L.ground(o, o + 1); L.mover(o + 3, 11, 4, 'x', 2); L.coins(o + 4, 10, 4); L.ground(o + 9, o + 10); }],
+    mover: [12, (L, o) => { L.ground(o, o + 1); L.mover(o + 3, 11, 4, 'x', 2); L.coins(o + 4, 10, 4); L.ground(o + 9, o + 11); }],
     crumble: [9, (L, o) => { L.ground(o, o + 1); L.crumble(o + 2, 13, 5); L.coins(o + 2, 11, 5); L.ground(o + 7, o + 8); }],
     saw: [10, (L, o) => { L.ground(o, o + 9); L.saw(o + 5, 8, 'y', 3.5); L.coins(o + 2, 11, 1); L.coins(o + 8, 11, 1); }],
     sawx: [11, (L, o) => { L.ground(o, o + 10); L.saw(o + 3, 9, 'x', 5, 60); L.plat(o + 4, 10, 2); L.coins(o + 4, 9, 2); }],
-    blink: [12, (L, o) => { L.ground(o, o + 1); L.blink(o + 2, 11, 3, 0); L.blink(o + 6, 11, 3, 1); L.coins(o + 2, 10, 3); L.coins(o + 6, 10, 3); L.ground(o + 10, o + 11); }],
+    blink: [11, (L, o) => { L.ground(o, o + 2); L.blink(o + 3, 13, 3, 0); L.blink(o + 6, 13, 3, 1); L.coins(o + 3, 11, 6); L.ground(o + 9, o + 10); }],
     belt: [12, (L, o) => { L.ground(o, o + 1); L.conveyor(o + 2, o + 11, 1); L.spikes(o + 7, 2); L.coins(o + 7, 9, 2); }],
     beltback: [12, (L, o) => { L.ground(o, o + 1); L.conveyor(o + 2, o + 9, -1); L.coins(o + 3, 11, 6); L.ground(o + 10, o + 11); }],
     ice: [12, (L, o) => { L.ground(o, o + 1); L.ice(o + 2, o + 9); L.spikes(o + 5, 2); L.coins(o + 5, 9, 2); L.ground(o + 10, o + 11); }],
@@ -1222,7 +1222,7 @@
     spring: [9, (L, o) => { L.ground(o, o + 8); L.spring(o + 4); L.coins(o + 4, 6, 1); L.coins(o + 4, 5, 1); L.coins(o + 4, 4, 1); }],
   };
   const NEW_OBSTACLE = {
-    '23': 'Neu: Kreissägen! ', '24': 'Neu: Blinkblöcke! Sie sind abwechselnd da und weg, pink und blau im Wechsel. ',
+    '23': 'Neu: Kreissägen! ', '24': 'Neu: Blinkbrücken! Erst ist der pinke Teil da, dann der blaue. Lauf los, kurz bevor Pink verschwindet, oder spring ganz drüber. ',
     '25': 'Neu: Förderbänder schieben dich! ', '26': 'Neu: Eisboden, da rutschst du! ',
   };
   const MEGA_WORLDS = [

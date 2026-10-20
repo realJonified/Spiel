@@ -42,7 +42,7 @@ Länger gedrückt halten = höher springen.
     Jeder kombiniert eine Bewegung (stampfen, springen, rasen, fliegen, teleportieren) mit mehreren Angriffen.
 - Ab Welt 19 gibt es neue Hindernisse: **Laserschranken**, die an- und ausgehen, **Feuerstäbe**, die sich drehen,
   und **Stampfblöcke**, die herunterkrachen, wenn du darunter läufst.
-- Ab Welt 23 kommen dazu: **Kreissägen**, **Blinkblöcke** (pink und blau im Wechsel), **Förderbänder**,
+- Ab Welt 23 kommen dazu: **Kreissägen**, **Blinkbrücken** (erst der pinke, dann der blaue Teil), **Förderbänder**,
   die dich schieben, und **Eisboden**, auf dem du rutschst.
   - Jeder Treffer gibt 300 Punkte, ein besiegter Boss 2000 Punkte.
   - In jedem Bosskampf hast du eine Waffe (Taste X oder ★-Knopf). Sie fliegt von selbst auf den Boss,
