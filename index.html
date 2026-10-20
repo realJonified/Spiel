@@ -130,6 +130,26 @@
   .times li.none .t { color: var(--muted); }
   .rec-actions { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; }
   .rec-empty { color: var(--muted); }
+  .menu-row { display: flex; gap: 10px; }
+  .menu-row button { flex: 1; }
+
+  #shop { position: fixed; z-index: 5; padding-block: 8px; }
+  .card.shop { max-width: 36rem; text-align: left; gap: 12px; }
+  .shop-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .wallet { font-family: var(--font-display); font-size: 18px; color: var(--gold); font-variant-numeric: tabular-nums; }
+  .shop-note { margin: 0; color: var(--muted); font-size: 14px; }
+  .skins { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr)); gap: 10px; }
+  .skin {
+    display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 10px;
+    background: var(--ink); border: 2px solid transparent; border-radius: 6px; text-align: center;
+  }
+  .skin.on { border-color: var(--leaf); }
+  .skin canvas { width: 64px; height: 64px; }
+  .skin .name { font-family: var(--font-display); font-size: 13px; }
+  .skin .desc { font-size: 13px; color: var(--muted); min-height: 2.6em; }
+  .card .skin button { width: 100%; margin-top: auto; font-size: 12px; padding: 8px 6px; }
+  .card .skin button:disabled { background: transparent; color: var(--muted); box-shadow: none; border: 2px dashed var(--panel-edge); cursor: default; }
+  .card .skin button.picked { background: transparent; color: var(--leaf); box-shadow: none; border: 2px solid var(--leaf); cursor: default; }
 
   .touch { display: none; }
   @media (pointer: coarse) {
@@ -165,6 +185,7 @@
     <div class="stat"><span class="heart">♥</span><span id="hudLives">3</span></div>
     <div class="stat"><span class="label">Punkte</span><span id="hudScore">0</span></div>
     <div class="spacer"></div>
+    <button id="shopBtn" type="button">Shop</button>
     <button id="recordsBtn" type="button">Rekorde</button>
     <button id="soundBtn" type="button" aria-pressed="true">Ton an</button>
   </div>
@@ -181,8 +202,26 @@
           <input id="playerName" type="text" maxlength="12" autocomplete="off" placeholder="Hüpfi">
         </label>
         <button id="ovBtn" type="button">Los geht's</button>
-        <button id="ovRecords" class="ghost" type="button">Bestenliste</button>
+        <div class="menu-row">
+          <button id="ovShop" class="ghost" type="button">Shop</button>
+          <button id="ovRecords" class="ghost" type="button">Bestenliste</button>
+        </div>
         <div class="best" id="ovBest"></div>
+      </div>
+    </div>
+
+    <div class="overlay" id="shop" hidden>
+      <div class="card shop" role="dialog" aria-labelledby="shopTitle">
+        <div class="shop-head">
+          <h2 id="shopTitle">Skin-Shop</h2>
+          <div class="wallet" id="wallet">● 0</div>
+        </div>
+        <p class="shop-note">Jede Münze, die du im Spiel einsammelst, landet in deinem Geldbeutel.</p>
+        <ul class="skins" id="skinList"></ul>
+        <div class="rec-actions">
+          <span></span>
+          <button id="shopClose" type="button">Schließen</button>
+        </div>
       </div>
     </div>
 
@@ -455,6 +494,28 @@
   let state = 'title', stateTimer = 0, time = 0, camX = 0;
   let levelTime = 0;
 
+  // ---------- Skins und Shop ----------
+  const SKINS = [
+    { id: 'huepfi', name: 'Hüpfi', price: 0, desc: 'Der Klassiker.', body: '#ff7a3d', shine: '#ffb07a', feet: '#7a2e1a' },
+    { id: 'minze', name: 'Minze', price: 50, desc: 'Frisch und grün.', body: '#4fd1a5', shine: '#a6f0d4', feet: '#1f6b52' },
+    { id: 'beere', name: 'Beere', price: 50, desc: 'Süß wie Himbeere.', body: '#ff6fae', shine: '#ffb6d6', feet: '#8a2453' },
+    { id: 'cool', name: 'Ozean', price: 120, desc: 'Blau mit Sonnenbrille.', body: '#3d8bff', shine: '#9cc4ff', feet: '#1c3f80', extra: 'shades' },
+    { id: 'kappe', name: 'Kappe', price: 150, desc: 'Mit roter Baseballkappe.', body: '#ffd34d', shine: '#fff0a8', feet: '#8a6a10', extra: 'cap' },
+    { id: 'ninja', name: 'Ninja', price: 250, desc: 'Schnell und leise.', body: '#2b2838', shine: '#4a4560', feet: '#15131c', extra: 'band' },
+    { id: 'katze', name: 'Katze', price: 300, desc: 'Mit Ohren und Schnurrhaaren.', body: '#a7a3b8', shine: '#d6d3e3', feet: '#5b5770', extra: 'ears' },
+    { id: 'robo', name: 'Roboter', price: 400, desc: 'Piep! Mit Antenne.', body: '#b9c3cf', shine: '#e6edf4', feet: '#56606c', extra: 'antenna' },
+    { id: 'koenig', name: 'König', price: 600, desc: 'Gold und eine Krone.', body: '#f2b53a', shine: '#ffe08a', feet: '#8c5a12', extra: 'crown' },
+    { id: 'regenbogen', name: 'Regenbogen', price: 1000, desc: 'Wechselt ständig die Farbe.', body: '#ff5d73', shine: '#ffffff', feet: '#3d2470', rainbow: true },
+  ];
+  const SHOP_KEY = 'huepfi-shop';
+  let shop = { wallet: 0, owned: ['huepfi'], skin: 'huepfi' };
+  try {
+    const raw = JSON.parse(localStorage.getItem(SHOP_KEY) || 'null');
+    if (raw && Array.isArray(raw.owned)) shop = { wallet: +raw.wallet || 0, owned: raw.owned, skin: raw.skin || 'huepfi' };
+  } catch (e) {}
+  const saveShop = () => { try { localStorage.setItem(SHOP_KEY, JSON.stringify(shop)); } catch (e) {} };
+  const currentSkin = () => SKINS.find(k => k.id === shop.skin) || SKINS[0];
+
   // ---------- Rekorde (bleiben nur in diesem Browser gespeichert) ----------
   const REC_KEY = 'huepfi-records';
   let records = { runs: [], times: {}, name: '' };
@@ -549,6 +610,7 @@
   const KEYMAP = { ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right', Space: 'jump', ArrowUp: 'jump', KeyW: 'jump' };
   addEventListener('keydown', e => {
     if (!$('records').hidden) { if (e.code === 'Escape') closeRecords(); return; }
+    if (!$('shop').hidden) { if (e.code === 'Escape') closeShop(); return; }
     if (e.target.tagName === 'INPUT' && e.code !== 'Enter') return;
     const k = KEYMAP[e.code];
     if (k) {
@@ -661,19 +723,55 @@
     });
   }
   let recResume = false, clearArmed = 0;
-  function openRecords() {
-    renderRecords();
-    recResume = state === 'play';
-    if (recResume) state = 'records';
-    $('records').hidden = false;
-    $('recClose').focus();
+  function openDialog(id, focusId) {
+    if (!recResume) { recResume = state === 'play'; if (recResume) state = 'dialog'; }
+    $(id).hidden = false;
+    $(focusId).focus();
   }
-  function closeRecords() {
-    $('records').hidden = true;
-    resetClear();
+  function closeDialog(id) {
+    $(id).hidden = true;
     if (document.activeElement) document.activeElement.blur();
-    if (recResume) { state = 'play'; recResume = false; }
+    if (recResume && $('records').hidden && $('shop').hidden) { state = 'play'; recResume = false; }
   }
+  function openRecords() { renderRecords(); openDialog('records', 'recClose'); }
+  function closeRecords() { resetClear(); closeDialog('records'); }
+
+  function drawSkinPreview(cv, skin) {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    cv.width = 64 * dpr; cv.height = 64 * dpr;
+    const g = cv.getContext('2d');
+    g.setTransform(dpr * 1.6, 0, 0, dpr * 1.6, 0, 0);
+    drawHuepfi(g, 9, 9, 22, 28, 1, 0, skin);
+  }
+  function renderShop() {
+    $('wallet').textContent = `● ${shop.wallet}`;
+    const ul = $('skinList');
+    ul.textContent = '';
+    for (const skin of SKINS) {
+      const owned = shop.owned.includes(skin.id), on = shop.skin === skin.id;
+      const li = document.createElement('li'); li.className = 'skin' + (on ? ' on' : '');
+      const cv = document.createElement('canvas'); drawSkinPreview(cv, skin);
+      const name = document.createElement('div'); name.className = 'name'; name.textContent = skin.name;
+      const desc = document.createElement('div'); desc.className = 'desc'; desc.textContent = skin.desc;
+      const btn = document.createElement('button'); btn.type = 'button';
+      if (on) { btn.textContent = 'Ausgewählt'; btn.className = 'picked'; }
+      else if (owned) { btn.textContent = 'Anziehen'; btn.onclick = () => { shop.skin = skin.id; saveShop(); renderShop(); }; }
+      else if (shop.wallet >= skin.price) {
+        btn.textContent = `Kaufen · ${skin.price} ●`;
+        btn.onclick = () => {
+          shop.wallet -= skin.price; shop.owned.push(skin.id); shop.skin = skin.id; saveShop();
+          sfx.flag(); renderShop();
+        };
+      } else { btn.textContent = `Noch ${skin.price - shop.wallet} ● fehlen`; btn.disabled = true; }
+      li.append(cv, name, desc, btn);
+      ul.appendChild(li);
+    }
+  }
+  function openShop() { renderShop(); openDialog('shop', 'shopClose'); }
+  function closeShop() { closeDialog('shop'); }
+  $('shopBtn').addEventListener('click', openShop);
+  $('ovShop').addEventListener('click', openShop);
+  $('shopClose').addEventListener('click', closeShop);
   function resetClear() {
     clearTimeout(clearArmed); clearArmed = 0;
     $('recClear').textContent = 'Rekorde löschen'; $('recClear').classList.remove('danger');
@@ -856,6 +954,7 @@
     for (const c of level.coins) {
       if (!c.got && Math.abs(p.x + p.w / 2 - c.x) < 20 && Math.abs(p.y + p.h / 2 - c.y) < 22) {
         c.got = true; coinCount++; score += 10; sfx.coin(); burst(c.x, c.y, '#ffc93c', 6);
+        shop.wallet++; saveShop();
         if (coinCount % 50 === 0) { lives++; popup(c.x, c.y - 10, '+1 ♥'); }
       }
     }
@@ -978,17 +1077,69 @@
     const x = p.x - camX - s / 2, y = p.y + p.h - h;
     ctx.save();
     if (state === 'dying') { ctx.translate(x + w / 2, y + h / 2); ctx.rotate(time * 0.2); ctx.translate(-(x + w / 2), -(y + h / 2)); }
-    ctx.fillStyle = '#ff7a3d'; roundRect(x, y, w, h, 7); ctx.fill();
-    ctx.fillStyle = '#ffb07a'; roundRect(x + 3, y + 3, w - 6, 6, 3); ctx.fill();
-    // Augen
-    const ex = x + w / 2 + p.face * 3;
-    ctx.fillStyle = '#fff'; ctx.fillRect(ex - 7, y + 9, 6, 8); ctx.fillRect(ex + 1, y + 9, 6, 8);
-    ctx.fillStyle = '#1b1530'; ctx.fillRect(ex - 5 + p.face * 1.5, y + 11, 3, 5); ctx.fillRect(ex + 3 + p.face * 1.5, y + 11, 3, 5);
-    // Füße
     const walk = p.onGround && Math.abs(p.vx) > 0.3 ? Math.sin(time * 0.4) * 3 : 0;
-    ctx.fillStyle = '#7a2e1a';
-    ctx.fillRect(x + 2 + walk, y + h - 3, 8, 4); ctx.fillRect(x + w - 10 - walk, y + h - 3, 8, 4);
+    drawHuepfi(ctx, x, y, w, h, p.face, walk, currentSkin());
     ctx.restore();
+  }
+
+  // Zeichnet Hüpfi mit einem Skin – auch für die kleinen Vorschaubilder im Shop
+  function drawHuepfi(g, x, y, w, h, face, walk, skin) {
+    const rr = (rx, ry, rw, rh, r) => {
+      g.beginPath(); g.moveTo(rx + r, ry); g.arcTo(rx + rw, ry, rx + rw, ry + rh, r); g.arcTo(rx + rw, ry + rh, rx, ry + rh, r);
+      g.arcTo(rx, ry + rh, rx, ry, r); g.arcTo(rx, ry, rx + rw, ry, r); g.closePath();
+    };
+    const body = skin.rainbow ? `hsl(${(time * 3) % 360}, 85%, 62%)` : skin.body;
+    const cx = x + w / 2, ex = cx + face * 3;
+    if (skin.extra === 'band') {
+      g.fillStyle = '#ff3b4e';
+      g.beginPath(); g.moveTo(cx - face * 10, y + 7); g.lineTo(cx - face * 20, y + 3 + Math.sin(time * 0.3) * 2); g.lineTo(cx - face * 19, y + 11); g.fill();
+    }
+    if (skin.extra === 'ears') {
+      g.fillStyle = body;
+      g.beginPath(); g.moveTo(x + 1, y + 6); g.lineTo(x + 4, y - 6); g.lineTo(x + 10, y + 2); g.fill();
+      g.beginPath(); g.moveTo(x + w - 1, y + 6); g.lineTo(x + w - 4, y - 6); g.lineTo(x + w - 10, y + 2); g.fill();
+      g.fillStyle = '#ff9ab8';
+      g.beginPath(); g.moveTo(x + 4, y + 2); g.lineTo(x + 5, y - 2); g.lineTo(x + 8, y + 2); g.fill();
+      g.beginPath(); g.moveTo(x + w - 4, y + 2); g.lineTo(x + w - 5, y - 2); g.lineTo(x + w - 8, y + 2); g.fill();
+    }
+    if (skin.extra === 'antenna') {
+      g.fillStyle = '#56606c'; g.fillRect(cx - 1, y - 7, 2, 8);
+      g.fillStyle = Math.floor(time / 20) % 2 ? '#ff5d73' : '#ffd34d';
+      g.beginPath(); g.arc(cx, y - 8, 3, 0, Math.PI * 2); g.fill();
+    }
+    g.fillStyle = body; rr(x, y, w, h, 7); g.fill();
+    g.fillStyle = skin.rainbow ? 'rgba(255,255,255,.55)' : skin.shine; rr(x + 3, y + 3, w - 6, 6, 3); g.fill();
+    if (skin.extra === 'antenna') { g.fillStyle = '#7d8896'; g.fillRect(x + 5, y + h - 11, w - 10, 4); }
+    if (skin.extra === 'band') { g.fillStyle = '#ff3b4e'; g.fillRect(x, y + 5, w, 4); }
+    // Augen
+    if (skin.extra === 'shades') {
+      g.fillStyle = '#15131c'; g.fillRect(ex - 9, y + 10, 18, 3); rr(ex - 8, y + 10, 7, 6, 2); g.fill(); rr(ex + 1, y + 10, 7, 6, 2); g.fill();
+      g.fillStyle = 'rgba(255,255,255,.6)'; g.fillRect(ex - 6, y + 11, 2, 2); g.fillRect(ex + 3, y + 11, 2, 2);
+    } else {
+      g.fillStyle = '#fff'; g.fillRect(ex - 7, y + 9, 6, 8); g.fillRect(ex + 1, y + 9, 6, 8);
+      g.fillStyle = '#1b1530'; g.fillRect(ex - 5 + face * 1.5, y + 11, 3, 5); g.fillRect(ex + 3 + face * 1.5, y + 11, 3, 5);
+    }
+    if (skin.extra === 'ears') {
+      g.strokeStyle = '#4a4660'; g.lineWidth = 1; g.beginPath();
+      g.moveTo(ex - 6, y + 20); g.lineTo(ex - 13, y + 19); g.moveTo(ex - 6, y + 22); g.lineTo(ex - 13, y + 23);
+      g.moveTo(ex + 6, y + 20); g.lineTo(ex + 13, y + 19); g.moveTo(ex + 6, y + 22); g.lineTo(ex + 13, y + 23);
+      g.stroke();
+    }
+    if (skin.extra === 'cap') {
+      g.fillStyle = '#e8394d'; rr(x - 1, y - 4, w + 2, 9, 4); g.fill();
+      g.fillRect(face > 0 ? cx : x - 6, y + 2, w / 2 + 6, 3);
+      g.fillStyle = '#fff'; g.fillRect(cx - 2, y - 2, 4, 3);
+    }
+    if (skin.extra === 'crown') {
+      g.fillStyle = '#ffd34d';
+      g.beginPath(); g.moveTo(x + 2, y + 2); g.lineTo(x + 2, y - 7); g.lineTo(x + 7, y - 2); g.lineTo(cx, y - 9);
+      g.lineTo(x + w - 7, y - 2); g.lineTo(x + w - 2, y - 7); g.lineTo(x + w - 2, y + 2); g.closePath(); g.fill();
+      g.fillStyle = '#ff5d73'; g.beginPath(); g.arc(cx, y - 2, 2, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#4fd1a5'; g.fillRect(x + 4, y - 2, 2, 2); g.fillRect(x + w - 6, y - 2, 2, 2);
+    }
+    // Füße
+    g.fillStyle = skin.feet;
+    g.fillRect(x + 2 + walk, y + h - 3, 8, 4); g.fillRect(x + w - 10 - walk, y + h - 3, 8, 4);
   }
 
   function drawEnemy(e) {

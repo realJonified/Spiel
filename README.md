@@ -30,6 +30,25 @@ Länger gedrückt halten = höher springen.
 - Stacheln und Abgründe meiden.
 - Je höher du die Fahne berührst, desto mehr Bonuspunkte.
 
+## Skin-Shop
+
+Jede Münze, die du einsammelst, landet in deinem Geldbeutel. Im **Shop** kannst du damit neue Skins für Hüpfi kaufen:
+
+| Skin       | Preis | Besonderheit           |
+|------------|-------|------------------------|
+| Hüpfi      | frei  | der Klassiker          |
+| Minze      | 50    | grün                   |
+| Beere      | 50    | pink                   |
+| Ozean      | 120   | mit Sonnenbrille       |
+| Kappe      | 150   | rote Baseballkappe     |
+| Ninja      | 250   | Stirnband              |
+| Katze      | 300   | Ohren und Schnurrhaare |
+| Roboter    | 400   | blinkende Antenne      |
+| König      | 600   | Krone                  |
+| Regenbogen | 1000  | wechselt die Farbe     |
+
+Gekaufte Skins kannst du jederzeit wieder anziehen. Geldbeutel und Skins werden nur in deinem Browser gespeichert.
+
 ## Rekorde
 
 Über den Knopf **Rekorde** oben (oder **Bestenliste** im Menü) siehst du deine eigenen Rekorde:
