@@ -84,3 +84,11 @@ Die Rekorde werden nur in deinem Browser auf diesem Gerät gespeichert.
 - **Alle Skins** sind im Shop frei und können ohne Münzen angezogen werden.
 - **Welt wählen:** Über „Welten“ oben oder „Welt wählen“ im Menü startest du direkt in einer der 14 Welten.
 - Im Admin-Modus werden keine Einträge in der Bestenliste und keine Bestzeiten gespeichert.
+
+## Kindermodus
+
+- Lässt sich nur im **Admin-Bereich** an- und ausschalten (Admin-Modus an, dann „Welten“).
+- Hüpfi kann nicht sterben: Gegner, Stacheln, Feuer und Bosse schubsen ihn nur kurz weg.
+  Fällt er in ein Loch, kommt er zurück auf den letzten sicheren Boden.
+- Bleibt an, auch wenn der Admin-Modus wieder aus ist. Oben steht dann „Kindermodus“.
+- Im Kindermodus werden keine Rekorde gespeichert.

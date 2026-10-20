@@ -132,6 +132,19 @@
   .rec-empty { color: var(--muted); }
   .menu-row { display: flex; flex-wrap: wrap; gap: 10px; }
   .menu-row button { flex: 1 1 7rem; }
+  .kid-badge {
+    font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink);
+    background: var(--leaf); border-radius: 4px; padding: 3px 7px;
+  }
+  .kid-row {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px;
+    background: var(--ink); border-radius: 6px; padding: 12px 14px;
+  }
+  .kid-row div { flex: 1 1 14rem; min-width: 0; }
+  .kid-row strong { font-family: var(--font-display); font-weight: 400; font-size: 14px; color: var(--leaf); }
+  .kid-row p { margin: 4px 0 0; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  .card button.kid-toggle { min-width: 7rem; font-size: 13px; padding: 9px 14px; }
+  .card button.kid-toggle[aria-pressed="false"] { background: transparent; color: var(--text); border: 2px solid var(--panel-edge); box-shadow: none; }
   .admin-badge {
     font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink);
     background: var(--gold); border-radius: 4px; padding: 3px 7px;
@@ -205,6 +218,7 @@
     <div class="stat"><span class="heart">♥</span><span id="hudLives">3</span></div>
     <div class="stat"><span class="label">Punkte</span><span id="hudScore">0</span></div>
     <span class="admin-badge" id="adminBadge" hidden>Admin</span>
+    <span class="kid-badge" id="kidBadge" hidden>Kindermodus</span>
     <div class="spacer"></div>
     <button id="worldsBtn" type="button" hidden>Welten</button>
     <button id="shopBtn" type="button">Shop</button>
@@ -235,8 +249,16 @@
 
     <div class="overlay" id="worlds" hidden>
       <div class="card worlds" role="dialog" aria-labelledby="worldsTitle">
-        <h2 id="worldsTitle">Welt wählen</h2>
-        <p class="shop-note">Admin-Modus: Du startest direkt in der gewählten Welt. Rekorde werden dabei nicht gespeichert.</p>
+        <h2 id="worldsTitle">Admin-Bereich</h2>
+        <p class="shop-note">Im Admin-Modus und im Kindermodus werden keine Rekorde gespeichert.</p>
+        <div class="kid-row">
+          <div>
+            <strong>Kindermodus</strong>
+            <p>Hüpfi kann nicht sterben. Fällt er in ein Loch, kommt er zurück auf sicheren Boden. Bleibt an, auch wenn der Admin-Modus aus ist.</p>
+          </div>
+          <button id="kidToggle" class="kid-toggle" type="button" aria-pressed="false">Aus</button>
+        </div>
+        <h3>Welt wählen</h3>
         <ul class="world-grid" id="worldList"></ul>
         <div class="rec-actions">
           <button id="adminOff" class="ghost" type="button">Admin-Modus aus</button>
@@ -616,6 +638,9 @@
   let admin = false;
   try { admin = localStorage.getItem('huepfi-admin') === '1'; } catch (e) {}
   const ownsSkin = id => admin || shop.owned.includes(id);
+  // Kindermodus: Hüpfi kann nicht sterben. Nur im Admin-Modus umschaltbar, bleibt danach aber an.
+  let kidMode = false;
+  try { kidMode = localStorage.getItem('huepfi-kid') === '1'; } catch (e) {}
 
   // ---------- Rekorde (bleiben nur in diesem Browser gespeichert) ----------
   const REC_KEY = 'huepfi-records';
@@ -634,7 +659,7 @@
   // Trägt die Runde ein und gibt den Platz zurück (0 = nicht in den Top 10)
   function addRun(won) {
     lastRun = null;
-    if (score <= 0 || admin) return 0;
+    if (score <= 0 || admin || kidMode) return 0;
     lastRun = { name: records.name, score, coins: coinCount, world: level.name, won, date: Date.now() };
     records.runs.push(lastRun);
     records.runs.sort((a, b) => b.score - a.score);
@@ -658,7 +683,8 @@
     level = LEVELS[i]();
     player = {
       x: level.start.x * T + 5, y: level.start.y * T + 4, w: 22, h: 28,
-      vx: 0, vy: 0, onGround: false, face: 1, coyote: 0, buffer: 0, squash: 0,
+      vx: 0, vy: 0, onGround: false, face: 1, coyote: 0, buffer: 0, squash: 0, blink: 0,
+      safe: { x: level.start.x * T + 5, y: level.start.y * T + 4 },
     };
     enemies = level.enemies.map(e => e.type === 'bat'
       ? { ...e, x: e.bx, y: e.by, w: 26, h: 18, vx: 0, dead: 0 }
@@ -895,7 +921,17 @@
   }
   function applyAdmin() {
     $('adminBadge').hidden = !admin; $('worldsBtn').hidden = !admin; $('ovWorlds').hidden = !admin;
+    $('kidBadge').hidden = !kidMode;
+    $('kidToggle').textContent = kidMode ? 'An' : 'Aus';
+    $('kidToggle').setAttribute('aria-pressed', kidMode);
   }
+  $('kidToggle').addEventListener('click', () => {
+    if (!admin) return;
+    kidMode = !kidMode;
+    try { localStorage.setItem('huepfi-kid', kidMode ? '1' : '0'); } catch (e) {}
+    applyAdmin();
+    toast(kidMode ? 'Kindermodus an' : 'Kindermodus aus');
+  });
   function renderWorlds() {
     const ul = $('worldList');
     ul.textContent = '';
@@ -958,6 +994,18 @@
   // ---------- Spiellogik ----------
   function die() {
     if (state !== 'play') return;
+    if (kidMode) {
+      const p = player;
+      if (p.y > ROWS * T) {
+        // aus dem Loch zurück auf den letzten sicheren Boden
+        p.x = p.safe.x; p.y = p.safe.y; p.vx = 0; p.vy = 0; p.on = null; p.blink = 90;
+        beep(660, 0.2, 'triangle', 300, 0.08);
+      } else if (!p.blink) {
+        p.vy = -8; p.blink = 60;
+        beep(500, 0.12, 'triangle', -200, 0.06);
+      }
+      return;
+    }
     sfx.hurt();
     state = 'dying'; stateTimer = 70;
     player.vy = -9; player.vx = 0;
@@ -1168,6 +1216,11 @@
     }
     if (p.onGround && wasAir) p.squash = 6;
     p.squash *= 0.8;
+    if (p.blink) p.blink--;
+    if (p.onGround && !p.on) {
+      const ty = Math.floor((p.y + p.h + 1) / T), tl = tileAt(Math.floor(p.x / T), ty), tr = tileAt(Math.floor((p.x + p.w - 1) / T), ty);
+      if ((tl === 1 || tl === 2) && (tr === 1 || tr === 2)) p.safe = { x: p.x, y: p.y };
+    }
 
     if (p.y > ROWS * T + 40) { die(); return; }
 
@@ -1238,7 +1291,7 @@
       score += 500 + bonus; popup(p.x, p.y - 20, `+${500 + bonus}`);
       sfx.flag(); state = 'clear'; stateTimer = 110;
       const prev = records.times[level.name];
-      level.newTime = !admin && (!prev || levelTime < prev);
+      level.newTime = !admin && !kidMode && (!prev || levelTime < prev);
       if (level.newTime) { records.times[level.name] = levelTime; saveRecords(); popup(p.x, p.y - 44, 'Bestzeit!'); }
       burst(level.flag * T + 16, p.y, '#6bd16f', 20);
     }
@@ -1319,6 +1372,7 @@
     const x = p.x - camX - s / 2, y = p.y + p.h - h;
     ctx.save();
     if (state === 'dying') { ctx.translate(x + w / 2, y + h / 2); ctx.rotate(time * 0.2); ctx.translate(-(x + w / 2), -(y + h / 2)); }
+    if (p.blink && Math.floor(time / 4) % 2) ctx.globalAlpha = 0.35;
     const walk = p.onGround && Math.abs(p.vx) > 0.3 ? Math.sin(time * 0.4) * 3 : 0;
     drawHuepfi(ctx, x, y, w, h, p.face, walk, currentSkin());
     ctx.restore();
