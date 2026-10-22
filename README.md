@@ -2,7 +2,9 @@
 
 Ein kleines Jump-and-Run im Browser – eine einzige Datei, keine Installation.
 
-**Spielen:** `index.html` im Browser öffnen.
+**Jetzt spielen:** https://claude.ai/artifact/7voF8FxUhXAHJ7MJytdUEA
+
+Oder die Datei `index.html` herunterladen und im Browser öffnen.
 
 ## Steuerung
 
