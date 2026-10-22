@@ -2,9 +2,11 @@
 
 Ein kleines Jump-and-Run im Browser – eine einzige Datei, keine Installation.
 
-**Jetzt spielen:** https://claude.ai/artifact/7voF8FxUhXAHJ7MJytdUEA
+**Jetzt spielen:** https://realjonified.github.io/Spiel/
 
-Oder die Datei `index.html` herunterladen und im Browser öffnen.
+Weitere Möglichkeiten:
+- als Claude-Seite: https://claude.ai/artifact/7voF8FxUhXAHJ7MJytdUEA
+- die Datei `index.html` herunterladen und im Browser öffnen
 
 ## Steuerung
 
